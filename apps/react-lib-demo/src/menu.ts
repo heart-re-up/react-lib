@@ -96,4 +96,44 @@ export const menuRoutes: MenuRoute[] = [
         (module) => module.default
       ),
   },
+  {
+    id: "click-outside",
+    path: "/click-outside",
+    title: "useClickOutside",
+    description: "요소 외부 클릭을 감지하여 모달, 드롭다운 등을 제어하는 훅",
+    component: async () =>
+      import("@/pages/use-click-outside-demo/UseClickOutsideDemoPage").then(
+        (module) => module.default
+      ),
+  },
+  {
+    id: "interval",
+    path: "/interval",
+    title: "useInterval",
+    description: "React에서 setInterval을 안전하게 사용하는 훅",
+    component: async () =>
+      import("@/pages/use-interval-demo/UseIntervalDemoPage").then(
+        (module) => module.default
+      ),
+  },
+  {
+    id: "intersection-observer",
+    path: "/intersection-observer",
+    title: "useIntersectionObserver",
+    description: "요소의 뷰포트 교차를 감지하여 무한 스크롤, lazy loading 등을 구현하는 훅",
+    component: async () =>
+      import("@/pages/use-intersection-observer-demo/UseIntersectionObserverDemoPage").then(
+        (module) => module.default
+      ),
+  },
+  {
+    id: "fetch",
+    path: "/fetch",
+    title: "useFetch",
+    description: "간단한 데이터 페칭을 위한 훅",
+    component: async () =>
+      import("@/pages/use-fetch-demo/UseFetchDemoPage").then(
+        (module) => module.default
+      ),
+  },
 ] as const;
