@@ -2,7 +2,7 @@ import { RefObject, useCallback, useEffect, useState } from "react";
 import { getFocusableElements } from "../useFocusTrap/useFocusTrap.util";
 import { useMutationObserver } from "../useMutationObserver";
 
-export type UseFocusableElementsOptions = {
+export type UseFocusableElementsProps = {
   /**
    * 포커스 가능한 요소를 찾을 컨테이너 요소 ref
    */
@@ -25,7 +25,7 @@ export type UseFocusableElementsReturn = {
 };
 
 export const useFocusableElements = (
-  options: UseFocusableElementsOptions
+  options: UseFocusableElementsProps
 ): UseFocusableElementsReturn => {
   const {
     containerRef,

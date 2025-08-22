@@ -1,7 +1,7 @@
-import { RefObject, useEffect, useRef, useCallback } from "react";
+import { RefObject, useCallback, useEffect, useRef } from "react";
 import { useDebounce } from "../useDebounce";
 
-type UseMutationObserverOptions = {
+export type UseMutationObserverProps = {
   /**
    * 관찰할 요소의 ref
    */
@@ -25,11 +25,15 @@ type UseMutationObserverOptions = {
   debounceDelay?: number;
 };
 
+export type UseMutationObserverReturns = {
+  disconnect: () => void;
+};
+
 /**
  * MutationObserver를 쉽게 사용할 수 있는 훅
  * 각 요소마다 개별 Observer를 생성하여 독립적인 옵션 사용 가능
  */
-export function useMutationObserver({
+export const useMutationObserver = ({
   targetRef,
   callback,
   options = {
@@ -38,7 +42,7 @@ export function useMutationObserver({
   },
   disabled = false,
   debounceDelay = 0,
-}: UseMutationObserverOptions) {
+}: UseMutationObserverProps): UseMutationObserverReturns => {
   const observerRef = useRef<MutationObserver | null>(null);
 
   // 내부 핸들러 (useCallback으로 메모이제이션)
@@ -102,4 +106,4 @@ export function useMutationObserver({
   };
 
   return { disconnect };
-}
+};

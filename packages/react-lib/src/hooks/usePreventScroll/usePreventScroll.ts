@@ -1,7 +1,7 @@
 import { useRef } from "react";
 import { useIsomorphicLayoutEffect } from "../useIsomorphicLayoutEffect";
 
-type UsePreventScrollOptions = {
+export type UsePreventScrollProps = {
   prevent?: boolean;
   target?: HTMLElement; // 기본값: document.body
   restoreScrollPosition?: boolean;
@@ -37,8 +37,12 @@ const injectStyles = () => {
   stylesInjected = true;
 };
 
-export function usePreventScroll(options: UsePreventScrollOptions = {}) {
-  const { prevent = true, target, restoreScrollPosition = false } = options;
+export const usePreventScroll = (options?: UsePreventScrollProps) => {
+  const {
+    prevent = true,
+    target,
+    restoreScrollPosition = false,
+  } = options ?? {};
 
   // 스크롤 위치를 ref로 관리 (restoreScrollPosition이 true일 때만 사용)
   const scrollPositionRef = useRef<number>(0);
@@ -79,4 +83,4 @@ export function usePreventScroll(options: UsePreventScrollOptions = {}) {
       }
     };
   }, [prevent, target, restoreScrollPosition]);
-}
+};

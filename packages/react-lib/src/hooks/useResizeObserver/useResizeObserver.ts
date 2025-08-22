@@ -1,7 +1,7 @@
 import { RefObject, useEffect, useRef, useState, useCallback } from "react";
 import { useDebounce } from "../useDebounce";
 
-export type UseResizeObserverOptions = {
+export type UseResizeObserverProps = {
   /**
    * 관찰할 요소의 ref
    */
@@ -24,7 +24,7 @@ export type UseResizeObserverOptions = {
   debounceDelay?: number;
 };
 
-export type UseResizeObserverReturn = {
+export type UseResizeObserverReturns = {
   /**
    * 현재 요소의 크기
    */
@@ -49,7 +49,7 @@ export function useResizeObserver({
   options,
   disabled = false,
   debounceDelay = 0,
-}: UseResizeObserverOptions): UseResizeObserverReturn {
+}: UseResizeObserverProps): UseResizeObserverReturns {
   const observerRef = useRef<ResizeObserver | null>(null);
   const [size, setSize] = useState<{ width: number; height: number } | null>(
     null

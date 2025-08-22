@@ -1,42 +1,9 @@
+import { cn } from "@/lib/utils";
+import { menuRoutes } from "@/menu";
 import { TextField } from "@radix-ui/themes";
 import { SearchIcon } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Link, useLocation } from "react-router";
-import { cn } from "@/lib/utils";
-
-interface MenuRoute {
-  id: string;
-  path: string;
-  title: string;
-  description?: string;
-}
-
-const menuRoutes: MenuRoute[] = [
-  {
-    id: "debounce",
-    path: "/debounce",
-    title: "useDebounce",
-    description: "값의 변경을 지연시키는 훅",
-  },
-  {
-    id: "toggle",
-    path: "/toggle",
-    title: "useToggle",
-    description: "불린 상태를 토글하는 훅",
-  },
-  {
-    id: "localStorage",
-    path: "/localStorage",
-    title: "useLocalStorage",
-    description: "로컬스토리지와 동기화하는 훅",
-  },
-  {
-    id: "progress-counter",
-    path: "/progress-counter",
-    title: "useProgressCounter",
-    description: "비동기 작업 진행 상태를 관리하는 훅",
-  },
-];
 
 interface SideMenuProps {
   isOpen: boolean;
