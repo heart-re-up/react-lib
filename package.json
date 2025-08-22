@@ -1,0 +1,40 @@
+{
+    "name": "@heart-re-up/root",
+    "version": "1.0.0",
+    "private": true,
+    "packageManager": "pnpm@10.10.0",
+    "scripts": {
+        "build": "turbo build",
+        "dev": "turbo dev",
+        "lint": "turbo lint",
+        "lint:fix": "turbo lint:fix",
+        "format": "turbo format",
+        "format:fix": "turbo format:fix",
+        "typecheck": "turbo typecheck",
+        "clean": "turbo clean && rm -rf .turbo node_modules",
+        "clean:cache": "turbo clean",
+        "test": "turbo test",
+        "test:watch": "turbo test:watch",
+        "preview": "turbo preview"
+    },
+    "devDependencies": {
+        "@eslint/js": "^9.28.0",
+        "eslint": "^9.28.0",
+        "eslint-config-prettier": "^9.1.0",
+        "eslint-plugin-only-warn": "^1.1.0",
+        "eslint-plugin-react": "^7.37.5",
+        "eslint-plugin-react-hooks": "^5.2.0",
+        "eslint-plugin-react-refresh": "^0.4.20",
+        "eslint-plugin-turbo": "^2.5.4",
+        "globals": "^15.15.0",
+        "prettier": "^3.5.3",
+        "turbo": "^2.5.4",
+        "typescript": "~5.8.3",
+        "typescript-eslint": "^8.33.1",
+        "rimraf": "^6.0.1"
+    },
+    "engines": {
+        "node": ">=18",
+        "pnpm": ">=8"
+    }
+}

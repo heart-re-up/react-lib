@@ -1,0 +1,26 @@
+# 패키지 설치 설정
+auto-install-peers=true
+shamefully-hoist=false
+strict-peer-dependencies=false
+
+# 패키지 레지스트리
+registry=https://registry.npmjs.org/
+
+# 성능 최적화
+network-concurrency=16
+fetch-retries=3
+fetch-retry-mintimeout=10000
+fetch-retry-maxtimeout=60000
+
+# pnpm 전용 설정
+prefer-workspace-packages=true
+link-workspace-packages=deep
+shared-workspace-lockfile=true
+
+# React 19 타입 관련 이슈 해결
+public-hoist-pattern[]=*eslint*
+public-hoist-pattern[]=*prettier*
+public-hoist-pattern[]=*@types*
+
+# 보안
+audit-level=moderate

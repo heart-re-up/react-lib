@@ -1,0 +1,15 @@
+{
+    "name": "@heart-re-up/eslint-config",
+    "version": "1.0.0",
+    "private": true,
+    "exports": {
+        ".": "./base.mjs",
+        "./react": "./react.mjs",
+        "./lib": "./lib.mjs",
+        "./node": "./node.mjs"
+    },
+    "files": [
+        "*.mjs",
+        "*.js"
+    ]
+}
