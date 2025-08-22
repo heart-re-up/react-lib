@@ -29,7 +29,7 @@ export default defineConfig({
         // packages.json 의 exports 는 dist/*.js 와 같이 패턴 매칭한다.
         ...createEntry([
           // Contexts
-          "contexts/progress-counter",
+          "contexts/progress-counter-async",
           // Hooks
           "hooks/useLocalStorage",
           "hooks/useDebounce",
@@ -53,6 +53,13 @@ export default defineConfig({
           "hooks/useThrottle",
           "hooks/useTimeout",
           "hooks/useCopyToClipboard",
+          "hooks/useProgressCounter",
+          "hooks/useProgressCounterAsync",
+          "hooks/useClickOutside",
+          "hooks/useInterval",
+          "hooks/useIntersectionObserver",
+          "hooks/useFetch",
+          "hooks/useOnScreen",
         ]),
       },
       formats: ["es", "cjs"],
