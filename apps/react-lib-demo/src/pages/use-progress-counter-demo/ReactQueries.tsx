@@ -1,7 +1,6 @@
-import DemoHeader from "@/components/components/DemoHeader";
 import { timeout } from "@/lib/utils";
-import { useProgress } from "@heart-re-up/react-lib/contexts/progress-counter-async";
-import { Button, Card, Flex, Heading, Text } from "@radix-ui/themes";
+import { useProgressCounterAsyncContext } from "@heart-re-up/react-lib/contexts/progress-counter-async";
+import { Button, Card, Flex, Text } from "@radix-ui/themes";
 import { useQuery } from "@tanstack/react-query";
 import { random } from "lodash-es";
 
@@ -11,7 +10,7 @@ const queryFn = async () => {
 };
 
 const useQueryDemo = (index: number) => {
-  const { progressCounterWith } = useProgress();
+  const { progressCounterWith } = useProgressCounterAsyncContext();
   return useQuery({
     queryKey: ["query", index],
     queryFn: () => progressCounterWith(queryFn),
@@ -19,20 +18,17 @@ const useQueryDemo = (index: number) => {
 };
 
 export default function ReactQueries() {
-  const { count, progress } = useProgress();
+  const { count, progress } = useProgressCounterAsyncContext();
   const query1 = useQueryDemo(1);
   const query2 = useQueryDemo(2);
   const query3 = useQueryDemo(3);
   return (
     <Card>
-      <DemoHeader
-        title="Progress Counter Async Jobs"
-        description="This is a demo of the Progress Counter Async Jobs component."
-      />
-      <Heading size={"3"} mt="2">
-        Count: {count}
-      </Heading>
-      <Heading size={"3"}>Progress: {progress ? "true" : "false"}</Heading>
+      <Text size={"3"} mt="2">
+        <code>
+          {`const { count = ${count}, progress = ${progress} } = useProgressCounterAsyncContext();`}
+        </code>
+      </Text>
       <Flex direction="row" gap="2" mt="2">
         <Button onClick={() => query1.refetch()} loading={query1.isFetching}>
           QUERY1

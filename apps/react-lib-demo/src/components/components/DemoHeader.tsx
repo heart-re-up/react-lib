@@ -8,7 +8,7 @@ export type DemoHeaderProps = {
 export default function DemoHeader({ title, description }: DemoHeaderProps) {
   return (
     <Flex direction="column" gap="2">
-      <Heading size="7" weight="bold">
+      <Heading size="9" weight="bold">
         {title}
       </Heading>
       {description && (
