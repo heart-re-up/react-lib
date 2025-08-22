@@ -1,14 +1,5 @@
-import DemoHeader from "@/components/components/DemoHeader";
-import { useProgressCounter } from "@heart-re-up/react-lib/hooks/useProgressCounter";
-import {
-  Box,
-  Button,
-  Card,
-  Flex,
-  Heading,
-  Spinner,
-  Text,
-} from "@radix-ui/themes";
+import { useProgressCounterAsyncContext } from "@heart-re-up/react-lib/contexts/progress-counter-async";
+import { Box, Button, Card, Flex, Heading, Text } from "@radix-ui/themes";
 import { animated, useTransition } from "@react-spring/web";
 import { random } from "lodash-es";
 import { useState } from "react";
@@ -32,7 +23,9 @@ export default function AsyncJobs() {
     config: { tension: 300, friction: 30 },
   });
 
-  const { count, progress, increment, decrement, reset } = useProgressCounter();
+  // useProgressCounter 훅을 직접 호출하여 진행 상태를 관리할 수 있습니다.
+  const { count, progress, increment, decrement, reset } =
+    useProgressCounterAsyncContext();
 
   const handleAddJob = () => {
     setJobs((prev) => [...prev, createJob()]);
@@ -50,15 +43,13 @@ export default function AsyncJobs() {
 
   return (
     <Card>
-      <DemoHeader
-        title="Progress Counter Async Jobs"
-        description="This is a demo of the Progress Counter Async Jobs component."
-      />
-      <Box py="4" mt="2" width="100%" translate="yes">
-        <Heading size={"3"} mt="2">
-          Count: {count}
-        </Heading>
-        <Heading size={"3"}>Progress: {progress ? "true" : "false"}</Heading>
+      <Box>
+        <Text size={"3"} mt="2">
+          <code>
+            {`const { count = ${count}, progress = ${progress} } = useProgressCounterAsyncContext();`}
+          </code>
+        </Text>
+
         <Flex
           direction="row"
           align="center"
@@ -70,6 +61,7 @@ export default function AsyncJobs() {
           <Button onClick={handleAddJob}>Add Job</Button>
           <Button onClick={handleClearJobs}>Reset</Button>
         </Flex>
+
         <Flex gap="4" direction="row" wrap={"wrap"} mt="2">
           {transitions((style, job) => (
             <animated.div style={style}>

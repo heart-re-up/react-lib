@@ -1,4 +1,4 @@
-import { createContext, use } from "react";
+import { createContext } from "react";
 import { UseProgressCounterAsyncReturns } from "../../hooks/useProgressCounterAsync";
 
 /**
@@ -11,9 +11,3 @@ export type ProgressCounterAsyncContextType = UseProgressCounterAsyncReturns;
  */
 export const ProgressCounterAsyncContext =
   createContext<ProgressCounterAsyncContextType | null>(null);
-
-/**
- * 비동기 작업 진행 상태를 관리하는 컨텍스트를 사용하는 훅
- */
-export const useProgressCounterAsyncContext = () =>
-  use(ProgressCounterAsyncContext);
