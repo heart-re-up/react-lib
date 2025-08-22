@@ -1,0 +1,12 @@
+{
+  "extends": "@heart-re-up/typescript-config/lib",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    }
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx", "vite-env.d.ts"],
+  "exclude": ["node_modules", "dist", "dev", "**/*.test.ts", "**/*.test.tsx"]
+}

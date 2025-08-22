@@ -1,0 +1,11 @@
+{
+    "name": "@heart-re-up/typescript-config",
+    "version": "1.0.0",
+    "private": true,
+    "exports": {
+        "./base": "./base.json",
+        "./app": "./app.json",
+        "./lib": "./lib.json",
+        "./node": "./node.json"
+    }
+}
