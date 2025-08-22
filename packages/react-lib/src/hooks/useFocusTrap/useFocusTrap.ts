@@ -5,7 +5,7 @@ import {
   UseFocusableElementsReturn,
 } from "../useFocusableElements";
 
-export type UseFocusTrapOptions = {
+export type UseFocusTrapProps = {
   disabled?: boolean;
   autoFocus?: boolean;
   containerRef: RefObject<HTMLElement | null>;
@@ -14,7 +14,7 @@ export type UseFocusTrapOptions = {
 export type UseFocusTrapReturn = UseFocusReturn & UseFocusableElementsReturn;
 
 export const useFocusTrap = (
-  options: UseFocusTrapOptions
+  options: UseFocusTrapProps
 ): UseFocusTrapReturn => {
   const { disabled = false, autoFocus = true, containerRef } = options;
 

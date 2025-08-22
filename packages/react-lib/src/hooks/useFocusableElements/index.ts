@@ -1,5 +1,5 @@
 export { useFocusableElements } from "./useFocusableElements";
 export type {
-  UseFocusableElementsOptions,
+  UseFocusableElementsProps,
   UseFocusableElementsReturn,
 } from "./useFocusableElements";

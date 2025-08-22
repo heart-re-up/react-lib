@@ -1,7 +1,14 @@
 import { useCallback, useEffect, useRef, useSyncExternalStore } from "react";
 import { useDebounce } from "../useDebounce";
 
-export type UseLocalStorageOptions = { debounceDelay?: number };
+export type UseLocalStorageProps = { debounceDelay?: number };
+export type UseLocalStorageReturns<T> = [
+  T,
+  (value: T | ((prev: T) => T)) => void,
+  () => void,
+  () => void,
+];
+
 /**
  * localStorage와 동기화되는 상태를 관리하는 Hook
  *
@@ -49,8 +56,8 @@ export type UseLocalStorageOptions = { debounceDelay?: number };
 export const useLocalStorage = <T>(
   key: string,
   initialValue: T,
-  options: UseLocalStorageOptions = {}
-): [T, (value: T | ((prev: T) => T)) => void, () => void, () => void] => {
+  options: UseLocalStorageProps = {}
+): UseLocalStorageReturns<T> => {
   const { debounceDelay = 200 } = options;
 
   // 참조 안정성을 위한 캐시

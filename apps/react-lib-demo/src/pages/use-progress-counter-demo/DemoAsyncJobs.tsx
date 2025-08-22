@@ -13,7 +13,7 @@ const createJob = () => {
   };
 };
 
-export default function AsyncJobs() {
+export default function DemoAsyncJobs() {
   const [jobs, setJobs] = useState<AsyncJob[]>([]);
 
   const transitions = useTransition(jobs, {

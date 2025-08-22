@@ -1,5 +1,6 @@
 import { RouteObject } from "react-router";
 import Layout from "./components/layouts/Layout";
+import { menuRoutes } from "./menu";
 
 export const routes: RouteObject[] = [
   {
@@ -13,42 +14,13 @@ export const routes: RouteObject[] = [
             import("@/pages/Home").then((module) => module.default),
         },
       },
-      {
-        id: "progress-counter",
-        path: "progress-counter",
+      ...menuRoutes.map((menuRoute) => ({
+        id: menuRoute.id,
+        path: menuRoute.path.replace("/", ""), // Remove leading slash for child routes
         lazy: {
-          Component: async () =>
-            import(
-              "@/pages/use-progress-counter-demo/UseProgressCounterDemo"
-            ).then((module) => module.default),
+          Component: menuRoute.component,
         },
-      },
-      {
-        id: "debounce",
-        path: "debounce",
-        lazy: {
-          Component: async () =>
-            import("@/pages/UseDebounceDemo").then((module) => module.default),
-        },
-      },
-      {
-        id: "toggle",
-        path: "toggle",
-        lazy: {
-          Component: async () =>
-            import("@/pages/UseToggleDemo").then((module) => module.default),
-        },
-      },
-      {
-        id: "localStorage",
-        path: "localStorage",
-        lazy: {
-          Component: async () =>
-            import("@/pages/UseLocalStorageDemo").then(
-              (module) => module.default
-            ),
-        },
-      },
+      })),
     ],
   },
 ];

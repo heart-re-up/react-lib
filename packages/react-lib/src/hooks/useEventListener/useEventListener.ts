@@ -1,6 +1,6 @@
 import { RefObject, useEffect, useRef } from "react";
-import { resolveTargetElement } from "./useEventListener.util";
 import { useIsomorphicLayoutEffect } from "../useIsomorphicLayoutEffect";
+import { resolveTargetElement } from "./useEventListener.util";
 
 // 사용 가능한 이벤트 대상 타입들
 export type ElementTarget<T extends EventTarget = EventTarget> =
@@ -10,7 +10,7 @@ export type ElementTarget<T extends EventTarget = EventTarget> =
 
 // 일반적으로 사용되는 표준 이벤트 이름들 (IDE 자동완성 지원)
 // 주요 DOM 요소들과 글로벌 이벤트들을 포함
-type StandardEventName =
+export type StandardEventName =
   // 기본 글로벌 이벤트들
   | keyof GlobalEventHandlersEventMap
   | keyof WindowEventMap
@@ -29,12 +29,12 @@ type StandardEventName =
   // Shadow DOM
   | keyof ShadowRootEventMap;
 
-export function useEventListener<T extends EventTarget = EventTarget>(
+export const useEventListener = <T extends EventTarget = EventTarget>(
   eventName: StandardEventName | (string & {}), // 표준 이벤트 + 커스텀 이벤트 모두 지원
   handler: (event: Event) => void,
   element?: ElementTarget<T>,
   options?: boolean | AddEventListenerOptions
-) {
+): void => {
   // 핸들러를 저장하는 ref
   const savedHandler = useRef(handler);
 
@@ -72,4 +72,4 @@ export function useEventListener<T extends EventTarget = EventTarget>(
       targetElement!.removeEventListener(eventName, eventListener);
     };
   }, [eventName, element, options]);
-}
+};

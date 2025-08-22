@@ -25,7 +25,7 @@ export default function AppBar({ onToggleSidebar }: AppBarProps) {
       </div>
 
       <div className="ml-auto">
-        <span className="text-sm text-gray-600">@heart-re-up/hooks</span>
+        <span className="text-sm text-gray-600">@heart-re-up/react-lib</span>
       </div>
     </header>
   );

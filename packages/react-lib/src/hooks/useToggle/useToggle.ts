@@ -21,17 +21,17 @@ import { useCallback, useState } from "react";
  * setOpen(true);
  *
  * // 모달 열기/닫기
- * const [isModalOpen, toggleModal, setModalOpen] = useToggle(false);
+ * const [modalOpen, toggleModal, setModalOpen] = useToggle(false);
  *
  * return (
  *   <div>
  *     <button onClick={toggleModal}>
- *       {isModalOpen ? 'Close' : 'Open'} Modal
+ *       {modalOpen ? 'Close' : 'Open'} Modal
  *     </button>
  *     <button onClick={() => setModalOpen(false)}>
  *       Force Close
  *     </button>
- *     {isModalOpen && <Modal />}
+ *     {modalOpen && <Modal />}
  *   </div>
  * );
  */

@@ -1,1 +1,5 @@
-export * from "./useResizeObserver";
+export { useResizeObserver } from "./useResizeObserver";
+export type {
+  UseResizeObserverProps,
+  UseResizeObserverReturns,
+} from "./useResizeObserver";

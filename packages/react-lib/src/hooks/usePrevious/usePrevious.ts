@@ -51,9 +51,11 @@ import { useRef } from "react";
  *   );
  * }
  */
-export const usePrevious = <T>(value: T): T | undefined => {
-  const currentRef = useRef<T>(value);
-  const previousRef = useRef<T | undefined>(undefined);
+export const usePrevious = <T>(
+  value: T | undefined | null
+): T | undefined | null => {
+  const currentRef = useRef<T | undefined | null>(value);
+  const previousRef = useRef<T | undefined | null>(undefined);
 
   // 값이 실제로 변경되었을 때만 이전값 업데이트
   if (currentRef.current !== value) {

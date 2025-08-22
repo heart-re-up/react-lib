@@ -17,7 +17,7 @@ const useQueryDemo = (index: number) => {
   });
 };
 
-export default function ReactQueries() {
+export default function DemoReactQueries() {
   const { count, progress } = useProgressCounterAsyncContext();
   const query1 = useQueryDemo(1);
   const query2 = useQueryDemo(2);

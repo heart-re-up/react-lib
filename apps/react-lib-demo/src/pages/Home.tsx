@@ -6,10 +6,10 @@ export default function Home() {
     <div className="max-w-4xl mx-auto">
       <div className="mb-8">
         <h1 className="text-4xl font-bold text-gray-900 mb-4">
-          React Hooks Library Demo
+          React Library Demo
         </h1>
         <p className="text-lg text-gray-600">
-          @heart-re-up/hooks 라이브러리의 다양한 훅들을 체험해보세요.
+          @heart-re-up/react-lib 라이브러리의 다양한 기능을 체험해보세요.
         </p>
         <Separator className="bg-gray-200 h-[1px] my-6" />
       </div>
@@ -47,6 +47,66 @@ export default function Home() {
             <p className="text-gray-600 text-sm">
               로컬스토리지와 React 상태를 동기화하는 훅입니다. 사용자 설정이나
               임시 데이터 저장에 유용합니다.
+            </p>
+          </Card>
+        </Link>
+
+        <Link to="/progress-counter" className="group">
+          <Card className="p-6 hover:shadow-lg transition-shadow duration-200 cursor-pointer">
+            <h3 className="text-xl font-semibold text-gray-900 mb-2 group-hover:text-violet-600">
+              useProgressCounter
+            </h3>
+            <p className="text-gray-600 text-sm">
+              동시 실행되는 비동기 작업들의 개수를 카운트하고, 현재 진행 중인
+              비동기 작업이 있는지 여부를 제공합니다.
+            </p>
+          </Card>
+        </Link>
+
+        <Link to="/countdown" className="group">
+          <Card className="p-6 hover:shadow-lg transition-shadow duration-200 cursor-pointer">
+            <h3 className="text-xl font-semibold text-gray-900 mb-2 group-hover:text-violet-600">
+              useCountdown
+            </h3>
+            <p className="text-gray-600 text-sm">
+              정확한 카운트다운 기능을 제공하는 훅입니다. 브라우저 탭 전환이나
+              백그라운드 실행 시에도 정확한 시간을 유지합니다.
+            </p>
+          </Card>
+        </Link>
+
+        <Link to="/copy-to-clipboard" className="group">
+          <Card className="p-6 hover:shadow-lg transition-shadow duration-200 cursor-pointer">
+            <h3 className="text-xl font-semibold text-gray-900 mb-2 group-hover:text-violet-600">
+              useCopyToClipboard
+            </h3>
+            <p className="text-gray-600 text-sm">
+              다양한 형태의 데이터를 클립보드에 복사할 수 있는 훅입니다. 텍스트,
+              이미지, HTML 등을 지원합니다.
+            </p>
+          </Card>
+        </Link>
+
+        <Link to="/download" className="group">
+          <Card className="p-6 hover:shadow-lg transition-shadow duration-200 cursor-pointer">
+            <h3 className="text-xl font-semibold text-gray-900 mb-2 group-hover:text-violet-600">
+              useDownload
+            </h3>
+            <p className="text-gray-600 text-sm">
+              다양한 형태의 데이터를 파일로 다운로드할 수 있는 훅입니다. 텍스트,
+              이미지, JSON 등을 지원합니다.
+            </p>
+          </Card>
+        </Link>
+
+        <Link to="/event-listener" className="group">
+          <Card className="p-6 hover:shadow-lg transition-shadow duration-200 cursor-pointer">
+            <h3 className="text-xl font-semibold text-gray-900 mb-2 group-hover:text-violet-600">
+              useEventListener
+            </h3>
+            <p className="text-gray-600 text-sm">
+              다양한 DOM 요소와 글로벌 이벤트를 쉽게 처리할 수 있는 훅입니다.
+              자동으로 이벤트 리스너를 등록하고 정리합니다.
             </p>
           </Card>
         </Link>
