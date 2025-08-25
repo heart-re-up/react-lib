@@ -2,7 +2,7 @@
     "name": "@heart-re-up/root",
     "version": "1.0.0",
     "private": true,
-    "packageManager": "pnpm@10.10.0",
+    "packageManager": "pnpm@10.15.0",
     "scripts": {
         "build": "turbo build",
         "dev": "turbo dev",
@@ -28,10 +28,10 @@
         "eslint-plugin-turbo": "^2.5.4",
         "globals": "^15.15.0",
         "prettier": "^3.5.3",
+        "rimraf": "^6.0.1",
         "turbo": "^2.5.4",
         "typescript": "~5.8.3",
-        "typescript-eslint": "^8.33.1",
-        "rimraf": "^6.0.1"
+        "typescript-eslint": "^8.33.1"
     },
     "engines": {
         "node": ">=18",

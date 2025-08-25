@@ -1,11 +1,13 @@
 import { RouteObject } from "react-router";
-import Layout from "./components/layouts/Layout";
+import HydrateFallback from "./components/HydrateFallback";
+import Layout from "./layouts/Layout";
 import { menuRoutes } from "./menu";
 
 export const routes: RouteObject[] = [
   {
     path: "/",
     Component: Layout,
+    HydrateFallback: HydrateFallback,
     children: [
       {
         index: true,

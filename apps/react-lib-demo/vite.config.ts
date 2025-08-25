@@ -37,6 +37,10 @@ export default defineConfig(({ mode }) => {
       outDir: "dist",
       sourcemap: mode !== "production",
       rollupOptions: {
+        input: {
+          main: resolve(__dirname, "index.html"),
+          iframe: resolve(__dirname, "iframe.html"),
+        },
         output: {
           manualChunks: {
             vendor: ["react", "react-dom"],

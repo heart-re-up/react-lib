@@ -1,0 +1,92 @@
+import { useEffect } from "react";
+import { useRuntimeContext } from "./useRuntimeContext";
+import type {
+  UseRuntimeContextRequiredProps,
+  UseRuntimeContextRequiredReturns,
+} from "./useRuntimeContextRequired.type";
+import { RuntimeContextRequiredError } from "./RuntimeContextRequiredError";
+
+/**
+ * 특정 런타임 컨텍스트에서만 동작하도록 제한하는 훅
+ *
+ * 필요한 환경에서 실행되지 않을 경우 에러를 발생시키거나 콜백을 실행합니다.
+ *
+ * @example
+ * ```tsx
+ * // iframe에서만 동작하도록 제한
+ * useRuntimeContextRequired({
+ *   required: ['iframe'],
+ *   message: '이 컴포넌트는 iframe에서만 사용할 수 있습니다.'
+ * });
+ *
+ * // 브라우저 환경(window, child, iframe)에서만 동작
+ * useRuntimeContextRequired({
+ *   required: ['window', 'child', 'iframe'],
+ *   onViolation: (error) => console.warn('브라우저에서만 사용 가능합니다.', error)
+ * });
+ * ```
+ *
+ * @param props 훅 옵션
+ * @returns 현재 컨텍스트와 요구사항 상태 정보
+ */
+export const useRuntimeContextRequired = (
+  props: UseRuntimeContextRequiredProps
+): UseRuntimeContextRequiredReturns => {
+  const {
+    requiredContexts: required,
+    message,
+    throwOnViolation = false,
+    onViolation,
+    disabled = false,
+  } = props;
+
+  // 현재 런타임 컨텍스트 감지
+  const currentContext = useRuntimeContext();
+
+  // 요구사항 확인
+  const isAllowed = disabled || required.includes(currentContext);
+  const isViolated = !isAllowed;
+
+  useEffect(() => {
+    if (disabled || isAllowed) {
+      return;
+    }
+
+    // 요구사항 위반 시 처리
+    const errorMessage =
+      message ||
+      `이 기능은 ${required.join(", ")} 환경에서만 사용할 수 있습니다. (현재: ${currentContext})`;
+
+    const runtimeContextRequiredError = new RuntimeContextRequiredError(
+      errorMessage,
+      currentContext,
+      required
+    );
+
+    // 콜백 실행
+    if (onViolation) {
+      onViolation(runtimeContextRequiredError);
+    }
+
+    // 에러 발생
+    if (throwOnViolation) {
+      throw runtimeContextRequiredError;
+    }
+  }, [
+    currentContext,
+    isAllowed,
+    isViolated,
+    disabled,
+    required,
+    message,
+    throwOnViolation,
+    onViolation,
+  ]);
+
+  return {
+    currentContext,
+    isAllowed,
+    isViolated,
+    requiredContexts: required,
+  };
+};

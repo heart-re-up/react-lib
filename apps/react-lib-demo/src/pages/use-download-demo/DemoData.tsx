@@ -15,7 +15,7 @@ export default function DemoData() {
   const [filename, setFilename] = useState("export-data");
   const [downloadStatus, setDownloadStatus] = useState<string>("");
 
-  const { download, isSupported } = useDownload();
+  const { download } = useDownload();
 
   // 샘플 데이터
   const sampleUsers: User[] = [

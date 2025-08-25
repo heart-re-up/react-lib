@@ -4,6 +4,17 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- CSP 메타 태그 - Vite가 환경변수로 대체 -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self';
+              child-src %VITE_CSP_CHILD_SRC%;
+              style-src %VITE_CSP_STYLE_SRC%;
+              img-src %VITE_CSP_IMG_SRC%;
+              media-src %VITE_CSP_MEDIA_SRC%;
+              object-src 'none';"
+    />
+
     <title>React Hooks Demo</title>
   </head>
   <body>
