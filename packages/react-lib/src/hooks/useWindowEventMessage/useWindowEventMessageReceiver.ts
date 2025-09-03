@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef } from "react";
 import { isTrustedOrigin } from "../../libs/window";
 import {
+  OnMessageFromUntrustedOriginHandler,
+  OnMessageHandler,
   UseWindowEventMessageReceiverProps,
   UseWindowEventMessageReceiverReturns,
 } from "./useWindowEventMessageReceiver.type";
@@ -34,8 +36,8 @@ export const useWindowEventMessageReceiver = (
     trustedOrigins: trustedOriginsProp = [],
     includeOwnMessage = false,
     disabled = false,
-    onMessage,
-    onMessageFromUntrustedOrigin,
+    onMessage: onMessageProp,
+    onMessageFromUntrustedOrigin: onMessageFromUntrustedOriginProp,
   } = props;
   const isServer = typeof window === "undefined";
   const trustedOriginsRef = useRef<string[]>(
@@ -54,9 +56,21 @@ export const useWindowEventMessageReceiver = (
     [trustedOriginsRef]
   );
 
+  // ref 생성
+  const onMessageRef = useRef<OnMessageHandler>(onMessageProp ?? null);
+  const onMessageFromUntrustedOriginRef =
+    useRef<OnMessageFromUntrustedOriginHandler>(
+      onMessageFromUntrustedOriginProp ?? null
+    );
+
+  // ref 업데이트
+  onMessageRef.current = onMessageProp ?? null;
+  onMessageFromUntrustedOriginRef.current =
+    onMessageFromUntrustedOriginProp ?? null;
+
   useEffect((): (() => void) => {
     // disabled 또는 서버 환경이거나 onMessage가 없으면 이벤트 리스너를 등록하지 않습니다.
-    if (disabled || isServer || !onMessage) {
+    if (disabled || isServer || !onMessageRef.current) {
       return () => {};
     }
 
@@ -72,9 +86,9 @@ export const useWindowEventMessageReceiver = (
 
       // Origin 검사
       if (isTrustedOrigin(event.origin, trustedOriginsRef.current)) {
-        onMessage?.(event, isOwnMessage);
+        onMessageRef.current?.(event, isOwnMessage);
       } else {
-        onMessageFromUntrustedOrigin?.(event);
+        onMessageFromUntrustedOriginRef.current?.(event);
       }
     };
 
@@ -83,12 +97,12 @@ export const useWindowEventMessageReceiver = (
       window.removeEventListener("message", handler);
     };
   }, [
+    onMessageRef,
+    onMessageFromUntrustedOriginRef,
     isServer,
     disabled,
     trustedOriginsRef,
     includeOwnMessage,
-    onMessage,
-    onMessageFromUntrustedOrigin,
   ]);
 
   return {

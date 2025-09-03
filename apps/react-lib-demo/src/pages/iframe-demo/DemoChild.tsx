@@ -1,5 +1,5 @@
+import { useRuntimeContextRequired } from "@heart-re-up/react-lib/hooks/useWindowContext";
 import { useWindowEventMessage } from "@heart-re-up/react-lib/hooks/useWindowEventMessage";
-import { WindowMessage } from "@heart-re-up/react-lib/libs/window";
 import { Badge, Button, Card, Flex, Text, TextField } from "@radix-ui/themes";
 import { useCallback, useEffect, useState } from "react";
 
@@ -16,6 +16,15 @@ export default function DemoChild() {
   );
   const [isConnected, setIsConnected] = useState(false);
 
+  // iframe 또는 open 에 의해서 열린 경우에만 실행 가능하게 함.
+  useRuntimeContextRequired({
+    requiredContexts: ["iframe", "child"],
+    throwOnViolation: true,
+    onViolation(error) {
+      console.error(error);
+    },
+  });
+
   // 로그 추가 함수
   const addLog = useCallback(
     (message: string, type: "info" | "success" | "error" = "info") => {
@@ -31,15 +40,15 @@ export default function DemoChild() {
 
   // 메시지 수신 핸들러
   const handleMessage = useCallback(
-    (message: WindowMessage<unknown>) => {
+    (event: MessageEvent) => {
       addLog(
-        `부모로부터 메시지 수신: ${JSON.stringify(message.payload)}`,
+        `부모로부터 메시지 수신: ${JSON.stringify(event.data)}`,
         "success"
       );
 
       // 연결 확인 메시지 처리
-      if (typeof message.payload === "object" && message.payload !== null) {
-        const data = message.payload as MessageData;
+      if (typeof event.data === "object" && event.data !== null) {
+        const data = event.data as MessageData;
         if (data.type === "connection-check") {
           setIsConnected(true);
           addLog("부모와 연결이 확인되었습니다!", "success");
@@ -51,28 +60,17 @@ export default function DemoChild() {
 
   // useWindowEventMessage 훅 사용
   const { postMessage } = useWindowEventMessage({
-    targetWindow: "parent", // 부모 윈도우로 메시지 전송
-    targetOrigin: "http://localhost:3000", // 같은 origin
-    trustedOrigins: [window.location.origin], // 같은 origin에서만 메시지 수신
-    onMessage: handleMessage,
+    targetWindow: window.parent, // 부모 윈도우로 메시지 전송
+    targetOrigin: "http://localhost:3000", // 부모의 origin
+    trustedOrigins: ["http://localhost:3000"], // 같은 origin에서만 메시지 수신
+    onMessage: (e) => {
+      console.log("부모로부터 메시지 수신:", e);
+      handleMessage(e);
+    },
+    onError: (error) => {
+      console.error("메시지 통신 오류:", error);
+    },
   });
-
-  // 컴포넌트 마운트 시 부모에게 준비 완료 알림
-  useEffect(() => {
-    const initMessage: MessageData = {
-      type: "child-ready",
-      content: "Iframe child가 준비되었습니다!",
-      timestamp: new Date().toISOString(),
-    };
-
-    // 약간의 지연 후 메시지 전송 (iframe 로딩 완료 보장)
-    const timer = setTimeout(() => {
-      postMessage(initMessage);
-      addLog("부모에게 준비 완료 메시지 전송", "info");
-    }, 100);
-
-    return () => clearTimeout(timer);
-  }, [postMessage, addLog]);
 
   // 메시지 전송 함수
   const sendMessage = useCallback(() => {
@@ -93,8 +91,12 @@ export default function DemoChild() {
   }, [outgoingMessage, postMessage, addLog]);
 
   // Enter 키 처리
-  const handleKeyPress = useCallback(
+  const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
+      if (e.nativeEvent.isComposing) {
+        // 한글 조합 중인 경우 무시함
+        return;
+      }
       if (e.key === "Enter") {
         sendMessage();
       }
@@ -120,6 +122,16 @@ export default function DemoChild() {
     addLog("연결 테스트 메시지 전송", "info");
   }, [postMessage, addLog]);
 
+  useEffect(() => {
+    const initMessage: MessageData = {
+      type: "child-ready",
+      content: "Iframe child가 준비되었습니다!",
+      timestamp: new Date().toISOString(),
+    };
+    postMessage(initMessage);
+    addLog("부모에게 준비 완료 메시지 전송", "info");
+  }, [addLog, postMessage]);
+
   return (
     <Card>
       <Flex direction="column" gap="4">
@@ -131,6 +143,10 @@ export default function DemoChild() {
             {isConnected ? "연결됨" : "연결 대기중"}
           </Badge>
         </Flex>
+
+        <Text size="2" weight="bold">
+          {window.location.href}
+        </Text>
 
         <Text size="2" color="gray">
           이 페이지는 부모 창의 iframe에서 실행되며, useWindowEventMessage를
@@ -150,7 +166,7 @@ export default function DemoChild() {
                 <TextField.Root
                   value={outgoingMessage}
                   onChange={(e) => setOutgoingMessage(e.target.value)}
-                  onKeyPress={handleKeyPress}
+                  onKeyDown={handleKeyDown}
                   placeholder="메시지를 입력하세요..."
                 />
               </Flex>

@@ -16,9 +16,11 @@ export default function Home() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {menuRoutes.map((item) => (
-          <HomeItemCard key={item.id} item={item} />
-        ))}
+        {menuRoutes
+          .filter((item) => !item.hidden)
+          .map((item) => (
+            <HomeItemCard key={item.id} item={item} />
+          ))}
       </div>
 
       <div className="mt-12 p-6 bg-violet-50 rounded-lg border border-violet-200">

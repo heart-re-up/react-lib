@@ -5,6 +5,26 @@ import { SearchIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link, useLocation } from "react-router";
 
+const categoryColors: Record<string, string> = {
+  temporal: "bg-blue-100 text-blue-800",
+  state: "bg-green-100 text-green-800",
+  helper: "bg-yellow-100 text-yellow-800",
+  event: "bg-red-100 text-red-800",
+  focus: "bg-purple-100 text-purple-800",
+  window: "bg-indigo-100 text-indigo-800",
+  communication: "bg-pink-100 text-pink-800",
+};
+
+const categoryLabels: Record<string, string> = {
+  temporal: "시간",
+  state: "상태",
+  helper: "유틸",
+  event: "이벤트",
+  focus: "포커스",
+  window: "윈도우",
+  communication: "통신",
+};
+
 interface SideMenuProps {
   isOpen: boolean;
   onClose: () => void;
@@ -74,6 +94,18 @@ export default function SideMenu({ isOpen, onClose }: SideMenuProps) {
                         : "text-gray-700"
                     )}
                   >
+                    <div className="flex flex-wrap gap-1 mb-1">
+                      {route.category.map((cat) => (
+                        <span
+                          key={cat}
+                          className={`px-1.5 py-0.5 text-xs rounded-full font-medium ${
+                            categoryColors[cat] || "bg-gray-100 text-gray-800"
+                          }`}
+                        >
+                          {categoryLabels[cat] || cat}
+                        </span>
+                      ))}
+                    </div>
                     <div className="font-medium">{route.title}</div>
                     {route.description && (
                       <div className="text-xs text-gray-500 mt-1">

@@ -1,5 +1,9 @@
 import { BroadcastChannelError } from "./BroadcastChannelError";
 
+export type OnBroadcaseChannelMessageHandler = (event: MessageEvent) => void;
+export type OnBroadcaseChannelErrorHandler = <E extends BroadcastChannelError>(
+  error: E
+) => void;
 export type UseBroadcastChannelProps = {
   /**
    * 채널 이름
@@ -18,12 +22,12 @@ export type UseBroadcastChannelProps = {
   /**
    * 메시지 수신 시 호출되는 콜백
    */
-  onMessage?: (event: MessageEvent) => void;
+  onMessage?: OnBroadcaseChannelMessageHandler;
 
   /**
    * 에러 발생 시 호출되는 콜백
    */
-  onError?: <E extends BroadcastChannelError>(error: E) => void;
+  onError?: OnBroadcaseChannelErrorHandler;
 };
 
 export type UseBroadcastChannelReturns = {

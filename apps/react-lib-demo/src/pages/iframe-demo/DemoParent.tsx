@@ -1,8 +1,6 @@
 import { useWindowEventMessage } from "@heart-re-up/react-lib/hooks/useWindowEventMessage";
-import { findTargetWindow } from "@heart-re-up/react-lib/libs/window";
-import { WindowMessage } from "@heart-re-up/react-lib/libs/window";
 import { Badge, Button, Card, Flex, Text, TextField } from "@radix-ui/themes";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 
 interface MessageData {
   type: string;
@@ -10,12 +8,26 @@ interface MessageData {
   timestamp: string;
 }
 
+const IFRAME_CHILD_URL = "http://localhost:3001/iframe";
+
 export default function DemoParent() {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [messageHistory, setMessageHistory] = useState<string[]>([]);
   const [outgoingMessage, setOutgoingMessage] = useState("Hello from parent!");
   const [iframeLoaded, setIframeLoaded] = useState(false);
   const [childReady, setChildReady] = useState(false);
+  const [trustedOrigins, setTrustedOrigins] = useState<string[]>([
+    new URL(IFRAME_CHILD_URL).origin,
+  ]);
+  // iframe 타겟으로 메시지를 전송하는 훅
+  const { postMessage, setTargetWindow, setTargetOrigin } =
+    useWindowEventMessage({
+      trustedOrigins,
+      onMessage: (event) => handleMessage(event),
+      onError: (error) => {
+        console.error("메시지 통신 오류:", error);
+      },
+    });
 
   // 로그 추가 함수
   const addLog = useCallback(
@@ -30,52 +42,19 @@ export default function DemoParent() {
     []
   );
 
-  // 메시지 수신 핸들러
-  const handleMessage = useCallback(
-    (message: WindowMessage<unknown>) => {
-      addLog(
-        `자식으로부터 메시지 수신: ${JSON.stringify(message.payload)}`,
-        "success"
-      );
-
-      // 자식 준비 완료 메시지 처리
-      if (typeof message.payload === "object" && message.payload !== null) {
-        const data = message.payload as MessageData;
-        if (data.type === "child-ready") {
-          setChildReady(true);
-          addLog("자식 페이지가 준비되었습니다!", "success");
-
-          // 연결 확인 메시지 전송
-          setTimeout(() => {
-            sendConnectionCheck();
-          }, 500);
-        }
-      }
-    },
-    [addLog]
-  );
-
-  // iframe 타겟으로 메시지를 전송하는 훅
-  const { postMessage } = useWindowEventMessage({
-    targetWindow: "frame:child-iframe", // iframe의 name 속성과 일치
-    targetOrigin: "http://localhost:3001",
-    trustedOrigins: [window.location.origin],
-    onMessage: handleMessage,
-  });
-
-  // iframe 로드 상태 확인
-  useEffect(() => {
-    const iframe = iframeRef.current;
-    if (!iframe) return;
-
-    const handleLoad = () => {
+  const onLoad = useCallback(
+    (e: React.SyntheticEvent<HTMLIFrameElement, Event>) => {
+      console.log("onLoad: iframe이 로드되었습니다.");
+      const w = e.currentTarget.contentWindow;
+      if (!w) return;
+      console.log("onLoad: window 가 유효합니다.", w);
       setIframeLoaded(true);
-      addLog("iframe이 로드되었습니다.", "success");
-    };
-
-    iframe.addEventListener("load", handleLoad);
-    return () => iframe.removeEventListener("load", handleLoad);
-  }, [addLog]);
+      setTargetWindow(w);
+      setTargetOrigin(new URL(IFRAME_CHILD_URL).origin);
+      addLog("onLoad: iframe이 로드되었습니다.", "success");
+    },
+    [addLog, setTargetWindow, setTargetOrigin]
+  );
 
   // 연결 확인 메시지 전송
   const sendConnectionCheck = useCallback(() => {
@@ -88,6 +67,31 @@ export default function DemoParent() {
     postMessage(checkMessage);
     addLog("자식에게 연결 확인 메시지 전송", "info");
   }, [postMessage, addLog]);
+
+  // 메시지 수신 핸들러
+  const handleMessage = useCallback(
+    (event: MessageEvent) => {
+      console.log("자식으로부터 메시지 수신:", event);
+      const payload = event.data as MessageData;
+
+      if (typeof payload === "object" && payload !== null) {
+        const data = payload as MessageData;
+        if (data.type === "child-ready") {
+          setChildReady(true);
+          addLog("자식 페이지가 준비되었습니다!", "success");
+          sendConnectionCheck();
+        }
+      }
+
+      addLog(
+        `자식으로부터 메시지 수신: ${JSON.stringify(event.data)}`,
+        "success"
+      );
+
+      // 자식 준비 완료 메시지 처리
+    },
+    [addLog, sendConnectionCheck]
+  );
 
   // 메시지 전송 함수
   const sendMessage = useCallback(() => {
@@ -137,8 +141,12 @@ export default function DemoParent() {
   }, [outgoingMessage, addLog]);
 
   // Enter 키 처리
-  const handleKeyPress = useCallback(
+  const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
+      if (e.nativeEvent.isComposing) {
+        // 한글 조합 중인 경우 무시함
+        return;
+      }
       if (e.key === "Enter") {
         sendMessage();
       }
@@ -150,16 +158,6 @@ export default function DemoParent() {
   const clearLogs = useCallback(() => {
     setMessageHistory([]);
     addLog("로그가 초기화되었습니다.", "info");
-  }, [addLog]);
-
-  // findTargetWindow 테스트
-  const testFindTargetWindow = useCallback(() => {
-    const target = findTargetWindow("frame:child-iframe");
-    if (target) {
-      addLog("findTargetWindow로 iframe을 성공적으로 찾았습니다!", "success");
-    } else {
-      addLog("findTargetWindow로 iframe을 찾지 못했습니다.", "error");
-    }
   }, [addLog]);
 
   return (
@@ -204,7 +202,7 @@ export default function DemoParent() {
                     <TextField.Root
                       value={outgoingMessage}
                       onChange={(e) => setOutgoingMessage(e.target.value)}
-                      onKeyPress={handleKeyPress}
+                      onKeyDown={handleKeyDown}
                       placeholder="메시지를 입력하세요..."
                     />
                   </Flex>
@@ -237,9 +235,6 @@ export default function DemoParent() {
                   <Flex gap="2" wrap="wrap">
                     <Button onClick={sendConnectionCheck} variant="soft">
                       🔗 연결 확인
-                    </Button>
-                    <Button onClick={testFindTargetWindow} variant="soft">
-                      🎯 타겟 찾기
                     </Button>
                     <Button onClick={clearLogs} variant="outline" size="2">
                       로그 지우기
@@ -306,12 +301,12 @@ export default function DemoParent() {
           <Card style={{ flex: 1 }}>
             <Flex direction="column" gap="3" style={{ height: "100%" }}>
               <Text size="3" weight="bold">
-                🖼️ 자식 Iframe
+                🖼️ 자식 iframe
               </Text>
 
               <iframe
                 ref={iframeRef}
-                src="http://localhost:3001/iframe"
+                src={IFRAME_CHILD_URL}
                 name="child-iframe"
                 title="Child Iframe"
                 style={{
@@ -321,17 +316,7 @@ export default function DemoParent() {
                   borderRadius: "8px",
                   minHeight: "500px",
                 }}
-                onLoad={(e: React.SyntheticEvent<HTMLIFrameElement, Event>) => {
-                  console.log(
-                    "iframe loaded: window",
-                    e.currentTarget.contentWindow
-                  );
-                  console.log(
-                    "iframe loaded: origin",
-                    e.currentTarget.contentWindow?.origin
-                  );
-                  setIframeLoaded(true);
-                }}
+                onLoad={onLoad}
               />
             </Flex>
           </Card>
