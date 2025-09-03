@@ -5,6 +5,8 @@ import {
   BroadcastChannelReceiveError,
 } from "./BroadcastChannelError";
 import {
+  OnBroadcaseChannelErrorHandler,
+  OnBroadcaseChannelMessageHandler,
   UseBroadcastChannelProps,
   UseBroadcastChannelReturns,
 } from "./useBroadcastChannel.type";
@@ -38,9 +40,25 @@ import {
 export const useBroadcastChannel = (
   props: UseBroadcastChannelProps
 ): UseBroadcastChannelReturns => {
-  const { channelName, disabled, onMessage, onError } = props;
+  const {
+    channelName,
+    disabled,
+    onMessage: onMessageProp,
+    onError: onErrorProp,
+  } = props;
   const isSupported = typeof BroadcastChannel !== "undefined";
   const channelRef = useRef<BroadcastChannel>(null);
+
+  const onMessageRef = useRef<OnBroadcaseChannelMessageHandler>(
+    onMessageProp ?? null
+  );
+  const onErrorRef = useRef<OnBroadcaseChannelErrorHandler>(
+    onErrorProp ?? null
+  );
+
+  // ref 업데이트
+  onMessageRef.current = onMessageProp ?? null;
+  onErrorRef.current = onErrorProp ?? null;
 
   /**
    * 채널 이름 설정
@@ -65,10 +83,10 @@ export const useBroadcastChannel = (
           channelName,
           error
         );
-        onError?.(broadcastError);
+        onErrorRef.current?.(broadcastError);
       }
     },
-    [channelRef, channelName, onError]
+    [onErrorRef, channelRef, channelName]
   );
 
   /**
@@ -78,7 +96,7 @@ export const useBroadcastChannel = (
     <T = unknown>(data: T): void => {
       // 채널 사용 가능 여부 확인
       if (!isSupported) {
-        onError?.(
+        onErrorRef.current?.(
           new BroadcastChannelNotSupportedError(
             "BroadcastChannel is not supported in this browser",
             channelName
@@ -87,7 +105,7 @@ export const useBroadcastChannel = (
       }
       // 채널 초기화 여부 확인
       else if (!channelRef.current) {
-        onError?.(
+        onErrorRef.current?.(
           new BroadcastChannelPostError("No channel found", channelName)
         );
       }
@@ -96,14 +114,14 @@ export const useBroadcastChannel = (
         performPostMessage(data);
       }
     },
-    [isSupported, channelName, onError, performPostMessage]
+    [onErrorRef, isSupported, channelName, performPostMessage]
   );
 
   // 채널 초기화
   useEffect(() => {
     // 채널 사용 가능 여부 확인
     if (!isSupported) {
-      onError?.(
+      onErrorRef.current?.(
         new BroadcastChannelNotSupportedError(
           "BroadcastChannel is not supported in this browser",
           channelName
@@ -113,7 +131,9 @@ export const useBroadcastChannel = (
     }
 
     if (!channelName) {
-      onError?.(new BroadcastChannelPostError("No channel name", channelName));
+      onErrorRef.current?.(
+        new BroadcastChannelPostError("No channel name", channelName)
+      );
       return;
     }
 
@@ -127,9 +147,9 @@ export const useBroadcastChannel = (
     // 메시지 리스너
     const handleMessage = (event: MessageEvent): void => {
       try {
-        onMessage?.(event);
+        onMessageRef.current?.(event);
       } catch (error) {
-        onError?.(
+        onErrorRef.current?.(
           new BroadcastChannelReceiveError(
             "Failed to receive message",
             channelName,
@@ -146,7 +166,7 @@ export const useBroadcastChannel = (
       channel.removeEventListener("message", handleMessage);
       channel.close();
     };
-  }, [isSupported, channelName, disabled, onMessage, onError]);
+  }, [onMessageRef, onErrorRef, isSupported, channelName, disabled]);
 
   return {
     isSupported,

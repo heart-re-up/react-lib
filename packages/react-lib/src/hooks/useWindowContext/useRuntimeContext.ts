@@ -1,4 +1,4 @@
-import { getServerEnvironment } from "@/libs/server/getServerRuntime";
+import { getServerEnvironment } from "../../libs/server/getServerRuntime";
 import { isWorker } from "../../libs/worker/isWorker";
 import { RuntimeContext } from "./RuntimeContext";
 

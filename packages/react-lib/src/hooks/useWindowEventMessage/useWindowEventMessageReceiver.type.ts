@@ -1,3 +1,10 @@
+export type OnMessageHandler = (
+  event: MessageEvent,
+  isOwnMessage: boolean
+) => void;
+
+export type OnMessageFromUntrustedOriginHandler = (event: MessageEvent) => void;
+
 export type UseWindowEventMessageReceiverProps = {
   /**
    * 메시지 수신에 사용되는 신뢰하는 출처 목록
@@ -27,12 +34,12 @@ export type UseWindowEventMessageReceiverProps = {
    *
    * 제공하지 않은 경우 메시지 수신 핸들러를 등록하지 않습니다.
    */
-  onMessage?: (event: MessageEvent, isOwnMessage: boolean) => void;
+  onMessage?: OnMessageHandler;
 
   /**
    * 신뢰하지 않는 출처에서 온 메시지 수신 핸들러
    */
-  onMessageFromUntrustedOrigin?: (event: MessageEvent) => void;
+  onMessageFromUntrustedOrigin?: OnMessageFromUntrustedOriginHandler;
 };
 
 export type UseWindowEventMessageReceiverReturns = {

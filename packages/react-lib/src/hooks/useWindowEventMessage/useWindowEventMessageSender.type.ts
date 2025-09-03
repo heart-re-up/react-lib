@@ -1,5 +1,5 @@
+import { WindowLike } from "@/libs/window";
 import { PostMessageOptions } from "@/libs/window/message";
-import { WindowTarget } from "../../libs/window";
 
 export type UseWindowEventMessageSenderProps = {
   /**
@@ -7,7 +7,7 @@ export type UseWindowEventMessageSenderProps = {
    *
    * 제공하지 않은 경우 현재 윈도우로 발송합니다.
    */
-  targetWindow?: WindowTarget | null;
+  targetWindow?: WindowLike | null;
 
   /**
    * 메시지를 수신하는 대상 윈도우의 origin
@@ -39,7 +39,7 @@ export type UseWindowEventMessageSenderReturns = {
    *
    * iframe 등 DOM Loaded 이후에 윈도우를 획득하는 경우에 사용합니다.
    */
-  setTargetWindow: (targetWindow: WindowTarget) => void;
+  setTargetWindow: (targetWindow: WindowLike) => void;
 
   /**
    * 대상 오리진을 설정합니다.

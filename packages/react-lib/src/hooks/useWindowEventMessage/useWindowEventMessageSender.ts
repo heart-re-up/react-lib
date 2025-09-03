@@ -1,6 +1,6 @@
 import { PostMessageOptions } from "@/libs/window/message";
 import { useCallback, useRef } from "react";
-import { findTargetWindow, WindowTarget } from "../../libs/window";
+import { findTargetWindow, WindowLike } from "../../libs/window";
 import {
   UseWindowEventMessageSenderProps,
   UseWindowEventMessageSenderReturns,
@@ -34,7 +34,7 @@ export const useWindowEventMessageSender = (
     targetWindow: targetWindowProp,
     targetOrigin: targetOriginProp,
     disabled = false,
-    onError,
+    onError: onErrorProp,
   } = props;
 
   // 대상 윈도우
@@ -53,13 +53,15 @@ export const useWindowEventMessageSender = (
     )
   );
 
+  const onErrorRef = useRef<(error: Error) => void>(onErrorProp ?? null);
+  onErrorRef.current = onErrorProp ?? null;
   /**
    * 대상 윈도우를 설정합니다.
    *
    * iframe 등 DOM Loaded 이후에 윈도우를 획득하는 경우에 사용합니다.
    */
   const setTargetWindow = useCallback(
-    (target: WindowTarget) => {
+    (target: WindowLike) => {
       targetWindowRef.current = findTargetWindow(target);
     },
     [targetWindowRef]
@@ -92,13 +94,15 @@ export const useWindowEventMessageSender = (
         );
       } catch (error: unknown) {
         if (error instanceof Error) {
-          onError?.(error);
+          onErrorRef.current?.(error);
         } else {
-          onError?.(new Error(`Failed to send message: ${String(error)}`));
+          onErrorRef.current?.(
+            new Error(`Failed to send message: ${String(error)}`)
+          );
         }
       }
     },
-    [onError]
+    [onErrorRef]
   );
 
   /**
@@ -110,18 +114,18 @@ export const useWindowEventMessageSender = (
     <T = unknown>(data: T, options?: PostMessageOptions) => {
       // 서버 환경이면 에러 발생
       if (isServer) {
-        onError?.(new Error("Cannot send message in server"));
+        onErrorRef.current?.(new Error("Cannot send message in server"));
       }
       // 메시지 전송 비활성화 여부 확인
       else if (disabled) {
-        onError?.(new Error("Message sending is disabled"));
+        onErrorRef.current?.(new Error("Message sending is disabled"));
       }
       // 메시지 전송
       else {
         performPostMessage(data, options);
       }
     },
-    [isServer, disabled, onError, performPostMessage]
+    [onErrorRef, isServer, disabled, performPostMessage]
   );
 
   return {
