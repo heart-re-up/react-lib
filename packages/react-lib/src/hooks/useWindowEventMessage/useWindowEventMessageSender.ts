@@ -1,6 +1,7 @@
 import { PostMessageOptions } from "@/libs/window/message";
 import { useCallback, useRef } from "react";
 import { findTargetWindow, WindowLike } from "../../libs/window";
+import { useRefLatest } from "../useCallbackRef/useCallbackRef";
 import {
   UseWindowEventMessageSenderProps,
   UseWindowEventMessageSenderReturns,
@@ -53,8 +54,9 @@ export const useWindowEventMessageSender = (
     )
   );
 
-  const onErrorRef = useRef<(error: Error) => void>(onErrorProp ?? null);
-  onErrorRef.current = onErrorProp ?? null;
+  // 렌더 영향없는 콜백 관리
+  const onErrorRef = useRefLatest(onErrorProp);
+
   /**
    * 대상 윈도우를 설정합니다.
    *

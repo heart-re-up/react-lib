@@ -1,12 +1,11 @@
 import { useCallback, useEffect, useRef } from "react";
+import { useRefLatest } from "../useCallbackRef/useCallbackRef";
 import {
   BroadcastChannelNotSupportedError,
   BroadcastChannelPostError,
   BroadcastChannelReceiveError,
 } from "./BroadcastChannelError";
 import {
-  OnBroadcaseChannelErrorHandler,
-  OnBroadcaseChannelMessageHandler,
   UseBroadcastChannelProps,
   UseBroadcastChannelReturns,
 } from "./useBroadcastChannel.type";
@@ -49,19 +48,12 @@ export const useBroadcastChannel = (
   const isSupported = typeof BroadcastChannel !== "undefined";
   const channelRef = useRef<BroadcastChannel>(null);
 
-  const onMessageRef = useRef<OnBroadcaseChannelMessageHandler>(
-    onMessageProp ?? null
-  );
-  const onErrorRef = useRef<OnBroadcaseChannelErrorHandler>(
-    onErrorProp ?? null
-  );
-
-  // ref 업데이트
-  onMessageRef.current = onMessageProp ?? null;
-  onErrorRef.current = onErrorProp ?? null;
+  // 렌더 영향없는 콜백 관리
+  const onMessageRef = useRefLatest(onMessageProp);
+  const onErrorRef = useRefLatest(onErrorProp);
 
   /**
-   * 채널 이름 설정
+   * 채널 이름 설정O
    */
   const setChannelName = useCallback(
     (channelName: string): void => {
