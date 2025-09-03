@@ -1,5 +1,6 @@
 import { Button } from "@radix-ui/themes";
 import { MenuIcon } from "lucide-react";
+import { Link } from "react-router";
 
 interface AppBarProps {
   onToggleSidebar: () => void;
@@ -19,7 +20,7 @@ export default function AppBar({ onToggleSidebar }: AppBarProps) {
 
       <div className="flex items-center">
         <h1 className="text-xl font-semibold text-gray-900">
-          React Hooks Library
+          <Link to="/">@heart-re-up/react-lib</Link>
         </h1>
         <span className="ml-2 text-sm text-gray-500">Demo</span>
       </div>

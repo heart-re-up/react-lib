@@ -10,7 +10,9 @@ function App() {
       mutations: { retry: false },
     },
   });
-  const router = createBrowserRouter(routes);
+  const router = createBrowserRouter(routes, {
+    basename: "/",
+  });
   return (
     <QueryClientProvider client={queryClient}>
       <RouterProvider router={router} />
