@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useRef } from "react";
 import { isTrustedOrigin } from "../../libs/window";
+import { useRefLatest } from "../useCallbackRef/useCallbackRef";
 import {
-  OnMessageFromUntrustedOriginHandler,
-  OnMessageHandler,
   UseWindowEventMessageReceiverProps,
   UseWindowEventMessageReceiverReturns,
 } from "./useWindowEventMessageReceiver.type";
@@ -56,17 +55,11 @@ export const useWindowEventMessageReceiver = (
     [trustedOriginsRef]
   );
 
-  // ref 생성
-  const onMessageRef = useRef<OnMessageHandler>(onMessageProp ?? null);
-  const onMessageFromUntrustedOriginRef =
-    useRef<OnMessageFromUntrustedOriginHandler>(
-      onMessageFromUntrustedOriginProp ?? null
-    );
-
-  // ref 업데이트
-  onMessageRef.current = onMessageProp ?? null;
-  onMessageFromUntrustedOriginRef.current =
-    onMessageFromUntrustedOriginProp ?? null;
+  // 렌더 영향없는 콜백 관리
+  const onMessageRef = useRefLatest(onMessageProp);
+  const onMessageFromUntrustedOriginRef = useRefLatest(
+    onMessageFromUntrustedOriginProp
+  );
 
   useEffect((): (() => void) => {
     // disabled 또는 서버 환경이거나 onMessage가 없으면 이벤트 리스너를 등록하지 않습니다.
