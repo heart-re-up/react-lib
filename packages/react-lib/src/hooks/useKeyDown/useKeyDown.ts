@@ -39,7 +39,7 @@ export const useKeyDown = <T extends EventTarget>(
         callbackRef.current?.(keyboardEvent, keyboardEvent.key);
       }
     },
-    [disabled, preventDefault, stopPropagation, targetKeys]
+    [disabled, preventDefault, stopPropagation, targetKeys, callbackRef]
   );
 
   return useEventListener("keydown", handleKeydown, element, {

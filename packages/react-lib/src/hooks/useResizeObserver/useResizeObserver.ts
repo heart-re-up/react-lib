@@ -71,7 +71,7 @@ export function useResizeObserver({
 
     // 사용자 정의 콜백 실행
     callbackRef.current?.(entries, observer);
-  }, []);
+  }, [callbackRef]);
 
   // useDebounce 훅 사용
   const debouncedHandleResize = useDebounce(handleResize, debounceDelay);

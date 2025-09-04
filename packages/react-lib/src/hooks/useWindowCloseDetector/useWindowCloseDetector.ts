@@ -61,7 +61,7 @@ export const useWindowCloseDetector = (
       windowRef.current = null;
       stopTrack();
     }
-  }, [windowRef, stopTrack]);
+  }, [windowRef, stopTrack, callbackRef]);
 
   const tryToTrack = useCallback(() => {
     // 브라우저에서 현재 탭이 노출된 상태이며, 닫기를 추적할 윈도우가 있다면 추적 시작

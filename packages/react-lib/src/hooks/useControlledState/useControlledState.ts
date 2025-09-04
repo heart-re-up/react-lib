@@ -81,7 +81,7 @@ export const useControlledState = <T>(
         onChangeRef.current?.(resolvedValue);
       }
     },
-    [currentValue, isControlled]
+    [currentValue, isControlled, onChangeRef]
   );
 
   return [currentValue, setValue];
