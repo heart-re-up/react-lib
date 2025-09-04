@@ -1,4 +1,6 @@
 import { useEventListener } from "../useEventListener";
+import { useRefLatest } from "../useCallbackRef/useCallbackRef";
+import { useCallback } from "react";
 
 export type UseWindowFocusChangeProps = (
   focused: boolean,
@@ -16,6 +18,14 @@ export type UseWindowFocusChangeReturns = void;
 export const useWindowFocusChange = (
   callback?: UseWindowFocusChangeProps
 ): UseWindowFocusChangeReturns => {
-  useEventListener("focus", (e: FocusEvent) => callback?.(true, e));
-  useEventListener("blur", (e: FocusEvent) => callback?.(false, e));
+  const callbackRef = useRefLatest(callback);
+  const handleFocus = useCallback((e: FocusEvent) => {
+    callbackRef.current?.(true, e);
+  }, [callbackRef]);
+  const handleBlur = useCallback((e: FocusEvent) => {
+    callbackRef.current?.(false, e);
+  }, [callbackRef]);
+
+  useEventListener("focus", handleFocus);
+  useEventListener("blur", handleBlur);
 };

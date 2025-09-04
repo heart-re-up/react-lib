@@ -1,4 +1,5 @@
 import { RefObject, useEffect, useRef, useState, useCallback } from "react";
+import { useRefLatest } from "../useCallbackRef/useCallbackRef";
 import { useDebounce } from "../useDebounce";
 
 export type UseResizeObserverProps = {
@@ -56,24 +57,21 @@ export function useResizeObserver({
   );
   const [entry, setEntry] = useState<ResizeObserverEntry | null>(null);
 
+  const callbackRef = useRefLatest(callback);
+
   // 내부 핸들러 (상태 업데이트 + 사용자 콜백)
-  const handleResize: ResizeObserverCallback = useCallback(
-    (entries, observer) => {
-      const [currentEntry] = entries;
+  const handleResize: ResizeObserverCallback = useCallback((entries, observer) => {
+    const [currentEntry] = entries;
 
-      if (currentEntry) {
-        const { width, height } = currentEntry.contentRect;
-        setSize({ width, height });
-        setEntry(currentEntry);
-      }
+    if (currentEntry) {
+      const { width, height } = currentEntry.contentRect;
+      setSize({ width, height });
+      setEntry(currentEntry);
+    }
 
-      // 사용자 정의 콜백 실행
-      if (callback) {
-        callback(entries, observer);
-      }
-    },
-    [callback]
-  );
+    // 사용자 정의 콜백 실행
+    callbackRef.current?.(entries, observer);
+  }, []);
 
   // useDebounce 훅 사용
   const debouncedHandleResize = useDebounce(handleResize, debounceDelay);

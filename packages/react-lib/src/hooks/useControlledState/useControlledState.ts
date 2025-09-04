@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 import { useEffectDev } from "../useEffectDev.ts/useEffectDev";
 import { usePrevious } from "../usePrevious";
+import { useRefLatest } from "../useCallbackRef/useCallbackRef";
 import {
   UseControlledStateProps,
   UseControlledStateReturns,
@@ -35,6 +36,7 @@ export const useControlledState = <T>(
   props: UseControlledStateProps<T>
 ): UseControlledStateReturns<T> => {
   const { value, defaultValue, onChange } = props;
+  const onChangeRef = useRefLatest(onChange);
 
   // 제어 컴포넌트인지 확인 (value가 undefined가 아닌 경우)
   const isControlled = value !== undefined;
@@ -75,11 +77,11 @@ export const useControlledState = <T>(
       }
 
       // onChange 콜백 호출 (제어/비제어 모두)
-      if (onChange && resolvedValue !== currentValue) {
-        onChange(resolvedValue);
+      if (resolvedValue !== currentValue) {
+        onChangeRef.current?.(resolvedValue);
       }
     },
-    [currentValue, isControlled, onChange]
+    [currentValue, isControlled]
   );
 
   return [currentValue, setValue];
