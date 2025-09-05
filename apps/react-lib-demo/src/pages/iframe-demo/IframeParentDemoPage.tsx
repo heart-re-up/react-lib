@@ -9,7 +9,7 @@ export default function IframeParentDemoPage() {
     <Box>
       <DemoHeader
         title="Iframe Parent"
-        description="iframe을 생성하여 자식 페이지를 로드하고 useWindowEventMessage를 통해 통신하는 부모 페이지입니다."
+        description="iframe을 생성하여 자식 페이지를 로드하고 useWindowMessageEvent를 통해 통신하는 부모 페이지입니다."
       />
 
       <DemoRelationList relations={relations} />

@@ -4,7 +4,7 @@
 export class BroadcastChannelError extends Error {
   constructor(
     message: string,
-    public readonly channelName: string,
+    public readonly channelName: string | null,
     public readonly cause?: unknown
   ) {
     super(`[Channel: ${channelName}] ${message}`);
@@ -18,7 +18,7 @@ export class BroadcastChannelError extends Error {
  * BroadcastChannel 전송 에러
  */
 export class BroadcastChannelPostError extends BroadcastChannelError {
-  constructor(message: string, channelName: string, cause?: unknown) {
+  constructor(message: string, channelName: string | null, cause?: unknown) {
     super(message, channelName, cause);
     this.name = "BroadcastChannelPostError";
     Object.setPrototypeOf(this, BroadcastChannelPostError.prototype);
@@ -29,7 +29,7 @@ export class BroadcastChannelPostError extends BroadcastChannelError {
  * BroadcastChannel 수신 에러
  */
 export class BroadcastChannelReceiveError extends BroadcastChannelError {
-  constructor(message: string, channelName: string, cause?: unknown) {
+  constructor(message: string, channelName: string | null, cause?: unknown) {
     super(message, channelName, cause);
     this.name = "BroadcastChannelReceiveError";
     Object.setPrototypeOf(this, BroadcastChannelReceiveError.prototype);
@@ -40,7 +40,7 @@ export class BroadcastChannelReceiveError extends BroadcastChannelError {
  * BroadcastChannel 미지원 브라우저 에러
  */
 export class BroadcastChannelNotSupportedError extends BroadcastChannelError {
-  constructor(message: string, channelName: string) {
+  constructor(message: string, channelName: string | null) {
     super(message, channelName);
     this.name = "BroadcastChannelNotSupportedError";
     Object.setPrototypeOf(this, BroadcastChannelNotSupportedError.prototype);

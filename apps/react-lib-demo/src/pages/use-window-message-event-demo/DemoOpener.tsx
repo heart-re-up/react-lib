@@ -18,7 +18,7 @@ export function DemoOpener() {
 
   const { open, close } = useOpenWindow({
     url: `${window.location.origin}${window.location.pathname}?tab=popup`,
-    target: "window-event-message",
+    target: "window-message-event",
     windowFeatures: {
       popup: true,
       width: 800,
@@ -60,7 +60,7 @@ export function DemoOpener() {
   return (
     <Box>
       <Text size="2" color="gray" mb="4" as="p">
-        이것은 WindowEventMessage Opener(메인 창) 데모입니다. 특정 윈도우와
+        이것은 WindowMessageEvent Opener(메인 창) 데모입니다. 특정 윈도우와
         1:1로 메시지를 주고받을 수 있습니다. 팝업 창을 열고 양방향으로 메시지를
         주고받아보세요.
       </Text>
@@ -72,11 +72,11 @@ export function DemoOpener() {
             새 창 열기
           </Heading>
           <Text size="2" color="gray" mb="3" as="p">
-            WindowEventMessage는 특정 윈도우를 지정해서 1:1 통신을 합니다. 새
+            WindowMessageEvent는 특정 윈도우를 지정해서 1:1 통신을 합니다. 새
             창을 열어서 연결을 확인해보세요.
           </Text>
           <Button onClick={handleOpenWindow} size="2" disabled={isOpenWindow}>
-            새 창 열기 (WindowEventMessage 연결)
+            새 창 열기 (WindowMessageEvent 연결)
           </Button>
           {isOpenWindow && (
             <Button onClick={handleCloseWindow} size="2">
@@ -101,7 +101,7 @@ export function DemoOpener() {
         style={{ backgroundColor: "var(--yellow-2)", borderRadius: "6px" }}
       >
         <Heading size="3" mb="2">
-          💡 WindowEventMessage 특징
+          💡 WindowMessageEvent 특징
         </Heading>
         <Text size="2" as="p" mb="2">
           • 특정 윈도우를 지정해서 1:1 통신을 합니다.

@@ -1,12 +1,12 @@
-import { getServerEnvironment } from "../../libs/server/getServerRuntime";
-import { isWorker } from "../../libs/worker/isWorker";
+import { getServerEnvironment } from "../../libs/runtime";
+import { isWorker } from "../../libs/runtime/isWorker";
 import { RuntimeContext } from "./RuntimeContext";
 
 /**
  * 현재 런타임의 컨텍스트를 감지하는 훅
  *
  * - "window": 일반 윈도우 (독립적인 브라우저 탭/창)
- * - "child": 자식 윈도우 (window.opener가 존재하는 팝업/새탭)
+ * - "opened": 자식 윈도우 (window.opener가 존재하는 팝업/새탭)
  * - "iframe": iframe 내부에서 실행
  * - "worker": Worker 환경 (Web Worker, Service Worker 등)
  * - "server": 서버 환경 (Node.js, Deno, Bun 등)
@@ -41,7 +41,7 @@ export const useRuntimeContext = (): RuntimeContext => {
     // 자식 윈도우인지 확인 (window.opener가 존재)
     // 팝업이든 새탭이든 부모 윈도우가 있다면 자식 윈도우
     if (window.opener && window.opener !== window) {
-      return "child";
+      return "opened";
     }
 
     // 일반 윈도우 (독립적인 브라우저 탭/창)

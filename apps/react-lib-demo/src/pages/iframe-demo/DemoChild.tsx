@@ -1,5 +1,5 @@
 import { useRuntimeContextRequired } from "@heart-re-up/react-lib/hooks/useWindowContext";
-import { useWindowEventMessage } from "@heart-re-up/react-lib/hooks/useWindowEventMessage";
+import { useWindowMessageEvent } from "@heart-re-up/react-lib/hooks/useWindowMessageEvent";
 import { Badge, Button, Card, Flex, Text, TextField } from "@radix-ui/themes";
 import { useCallback, useEffect, useState } from "react";
 
@@ -18,7 +18,7 @@ export default function DemoChild() {
 
   // iframe 또는 open 에 의해서 열린 경우에만 실행 가능하게 함.
   useRuntimeContextRequired({
-    requiredContexts: ["iframe", "child"],
+    requiredContexts: ["iframe", "opened"],
     throwOnViolation: true,
     onViolation(error) {
       console.error(error);
@@ -58,8 +58,8 @@ export default function DemoChild() {
     [addLog]
   );
 
-  // useWindowEventMessage 훅 사용
-  const { postMessage } = useWindowEventMessage({
+  // useWindowMessageEvent 훅 사용
+  const { postMessage } = useWindowMessageEvent({
     targetWindow: window.parent, // 부모 윈도우로 메시지 전송
     targetOrigin: "http://localhost:3000", // 부모의 origin
     trustedOrigins: ["http://localhost:3000"], // 같은 origin에서만 메시지 수신
@@ -149,7 +149,7 @@ export default function DemoChild() {
         </Text>
 
         <Text size="2" color="gray">
-          이 페이지는 부모 창의 iframe에서 실행되며, useWindowEventMessage를
+          이 페이지는 부모 창의 iframe에서 실행되며, useWindowMessageEvent를
           통해 부모와 통신합니다.
         </Text>
 
@@ -276,7 +276,7 @@ export default function DemoChild() {
                 • <strong>trustedOrigins</strong>: 현재 origin만 신뢰
               </Text>
               <Text size="2" color="green">
-                • <strong>통신 방식</strong>: useWindowEventMessage 훅 사용
+                • <strong>통신 방식</strong>: useWindowMessageEvent 훅 사용
               </Text>
             </Flex>
           </Card>

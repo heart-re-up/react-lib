@@ -49,20 +49,10 @@ export interface UseRuntimeContextRequiredReturns {
   /**
    * 현재 런타임 컨텍스트
    */
-  currentContext: RuntimeContext;
-
-  /**
-   * 현재 컨텍스트가 요구사항을 만족하는지 여부
-   */
-  isAllowed: boolean;
+  runtimeContext: RuntimeContext;
 
   /**
    * 요구사항을 위반했는지 여부 (isAllowed의 반대)
    */
   isViolated: boolean;
-
-  /**
-   * 필요한 런타임 컨텍스트 목록
-   */
-  requiredContexts: RuntimeContext[];
 }

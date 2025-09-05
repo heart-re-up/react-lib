@@ -21,10 +21,12 @@ import {
  * @example
  * ```typescript
  * // 메시지 송신자
- * const { sendMessage } = useBroadcastChannel('user-updates');
+ * const { postMessage } = useBroadcastChannel({
+ *   initialChannelName: 'user-updates',
+ * });
  *
  * const handleUserUpdate = (userData) => {
- *   sendMessage('USER_UPDATED', userData);
+ *   postMessage(userData);
  * };
  *
  * // 메시지 수신자 (본인이 보낸 메시지는 자동으로 제외됨)
@@ -40,12 +42,16 @@ export const useBroadcastChannel = (
   props: UseBroadcastChannelProps
 ): UseBroadcastChannelReturns => {
   const {
-    channelName,
+    initialChannelName,
     disabled,
     onMessage: onMessageProp,
     onError: onErrorProp,
   } = props;
+  /** 지원 여부 */
   const isSupported = typeof BroadcastChannel !== "undefined";
+  /** 채널 이름 */
+  const channelNameRef = useRef<string>(initialChannelName);
+  /** 채널 객체 */
   const channelRef = useRef<BroadcastChannel>(null);
 
   // 렌더 영향없는 콜백 관리
@@ -53,13 +59,107 @@ export const useBroadcastChannel = (
   const onErrorRef = useRefLatest(onErrorProp);
 
   /**
-   * 채널 이름 설정O
+   * 메시지 수신 리스너
+   *
+   * 훅 생성시 초기화되고 값이 변경되지 않습니다.
+   * closeBroadcastChannel 및 initBroadcastChannel 에서 이벤트 리스너 등록과 해제 시 동일한 함수를 참조하기 위해서 사용합니다.
    */
-  const setChannelName = useCallback(
-    (channelName: string): void => {
-      channelRef.current = new BroadcastChannel(channelName);
+  const listenerRef = useRef((event: MessageEvent) => {
+    try {
+      onMessageRef.current?.(event);
+    } catch (error) {
+      onErrorRef.current?.(
+        new BroadcastChannelReceiveError(
+          "Failed to receive message",
+          channelNameRef.current,
+          error
+        )
+      );
+    }
+  });
+
+  /**
+   * 채널 닫기.
+   */
+  const closeBroadcastChannel = useCallback((): void => {
+    if (channelRef.current) {
+      channelRef.current?.removeEventListener("message", listenerRef.current);
+      channelRef.current?.close();
+      channelRef.current = null;
+    }
+  }, [channelRef]);
+
+  /**
+   * 채널 초기화.
+   * 기존 채널을 닫고 새로운 채널을 생성합니다.
+   * channelNameRef 값을 사용합니다.
+   */
+  const initBroadcastChannel = useCallback(
+    (channelName: string | null): void => {
+      // 채널 사용 가능 여부 확인
+      if (!isSupported) {
+        onErrorRef.current?.(
+          new BroadcastChannelNotSupportedError(
+            "BroadcastChannel is not supported in this browser",
+            channelName
+          )
+        );
+        return;
+      }
+
+      // 채널 이름 확인
+      if (!channelName) {
+        onErrorRef.current?.(
+          new BroadcastChannelPostError("No channel name", channelName)
+        );
+        return;
+      }
+
+      // 채널 사용 비활성화 여부 확인
+      if (disabled) {
+        return;
+      }
+
+      // 채널 생성
+      const channel = new BroadcastChannel(channelName);
+      channelRef.current = channel;
+      channel.addEventListener("message", listenerRef.current);
     },
-    [channelRef]
+    [isSupported, disabled, onErrorRef, listenerRef]
+  );
+
+  /**
+   * 채널 초기화.
+   * 기존 채널을 닫고 새로운 채널을 생성합니다.
+   * channelNameRef 값을 사용합니다.
+   */
+  const resetBroadcastChannel = useCallback(
+    (channelName: string | null): void => {
+      const currentIsValid = !!channelNameRef.current;
+      const newIsValid = !!channelName;
+
+      // 둘 다 무효: 닫거나 생성할 일 없음.
+      if (!currentIsValid && !newIsValid) {
+        return;
+      }
+
+      // 둘 다 유효하고 같음: 이미 원하는 상태.
+      if (
+        currentIsValid &&
+        newIsValid &&
+        channelNameRef.current === channelName
+      ) {
+        return;
+      }
+
+      // 나머지 모든 경우: 변경 작업 필요
+      // - 하나만 유효: 유효한 대상에 따라 닫기 or 생성
+      // - 둘 다 유효하지만 다름: 닫고 생성
+      closeBroadcastChannel();
+      initBroadcastChannel(channelName);
+      channelNameRef.current = channelName; // 채널 이름 업데이트
+    },
+    [closeBroadcastChannel, initBroadcastChannel]
   );
 
   /**
@@ -72,13 +172,13 @@ export const useBroadcastChannel = (
       } catch (error) {
         const broadcastError = new BroadcastChannelPostError(
           "Failed to send message",
-          channelName,
+          channelNameRef.current,
           error
         );
         onErrorRef.current?.(broadcastError);
       }
     },
-    [onErrorRef, channelRef, channelName]
+    [onErrorRef, channelRef, channelNameRef]
   );
 
   /**
@@ -91,14 +191,17 @@ export const useBroadcastChannel = (
         onErrorRef.current?.(
           new BroadcastChannelNotSupportedError(
             "BroadcastChannel is not supported in this browser",
-            channelName
+            channelNameRef.current
           )
         );
       }
       // 채널 초기화 여부 확인
       else if (!channelRef.current) {
         onErrorRef.current?.(
-          new BroadcastChannelPostError("No channel found", channelName)
+          new BroadcastChannelPostError(
+            "No channel found.",
+            channelNameRef.current
+          )
         );
       }
       // 메시지 전송
@@ -106,63 +209,20 @@ export const useBroadcastChannel = (
         performPostMessage(data);
       }
     },
-    [onErrorRef, isSupported, channelName, performPostMessage]
+    [onErrorRef, isSupported, channelNameRef, performPostMessage]
   );
 
-  // 채널 초기화
+  // 조건 발동 사이드 이펙트
   useEffect(() => {
-    // 채널 사용 가능 여부 확인
-    if (!isSupported) {
-      onErrorRef.current?.(
-        new BroadcastChannelNotSupportedError(
-          "BroadcastChannel is not supported in this browser",
-          channelName
-        )
-      );
-      return;
-    }
-
-    if (!channelName) {
-      onErrorRef.current?.(
-        new BroadcastChannelPostError("No channel name", channelName)
-      );
-      return;
-    }
-
-    if (disabled) {
-      return;
-    }
-
-    // 채널 초기화
-    const channel = new BroadcastChannel(channelName);
-    channelRef.current = channel;
-    // 메시지 리스너
-    const handleMessage = (event: MessageEvent): void => {
-      try {
-        onMessageRef.current?.(event);
-      } catch (error) {
-        onErrorRef.current?.(
-          new BroadcastChannelReceiveError(
-            "Failed to receive message",
-            channelName,
-            error
-          )
-        );
-      }
-    };
-
-    channel.addEventListener("message", handleMessage);
-
-    // 정리 함수
-    return (): void => {
-      channel.removeEventListener("message", handleMessage);
-      channel.close();
-    };
-  }, [onMessageRef, onErrorRef, isSupported, channelName, disabled]);
+    resetBroadcastChannel(channelNameRef.current);
+    // 컴포넌트 언마운트시 채널 닫기
+    return closeBroadcastChannel;
+  }, [closeBroadcastChannel, resetBroadcastChannel]);
 
   return {
     isSupported,
-    setChannelName,
+    closeBroadcastChannel,
+    resetBroadcastChannel,
     postMessage,
   };
 };
