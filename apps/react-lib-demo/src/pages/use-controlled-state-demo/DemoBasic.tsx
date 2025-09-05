@@ -12,6 +12,10 @@ export function DemoBasic() {
     useState("제어된 입력");
   const [controlledCounterValue, setControlledCounterValue] = useState(5);
 
+  // 전환 테스트용 상태
+  const [isInputControlled, setIsInputControlled] = useState(true);
+  const [transitionTestValue, setTransitionTestValue] = useState("초기값");
+
   const resetAll = () => {
     setControlledInputValue("");
     setControlledCounterValue(0);
@@ -133,6 +137,65 @@ export function DemoBasic() {
         </Card>
       </Grid>
 
+      {/* 전환 테스트 섹션 */}
+      <Card mt="4">
+        <Flex direction="column" gap="4">
+          <Flex align="center" gap="2">
+            <Badge color="orange" variant="soft">
+              전환 테스트 (경고 발생)
+            </Badge>
+            <Text size="2" color="gray">
+              제어/비제어 전환 시 콘솔 경고 확인
+            </Text>
+          </Flex>
+
+          <Flex direction="column" gap="3">
+            <Flex align="center" gap="2">
+              <Button
+                size="2"
+                variant={isInputControlled ? "solid" : "outline"}
+                color="green"
+                onClick={() => setIsInputControlled(true)}
+              >
+                제어 모드
+              </Button>
+              <Button
+                size="2"
+                variant={!isInputControlled ? "solid" : "outline"}
+                color="blue"
+                onClick={() => setIsInputControlled(false)}
+              >
+                비제어 모드
+              </Button>
+              <Text size="2" color="gray">
+                현재: {isInputControlled ? "제어" : "비제어"}
+              </Text>
+            </Flex>
+
+            <Box>
+              <DemoInput
+                placeholder="모드를 전환해보세요 (콘솔 확인)"
+                value={isInputControlled ? transitionTestValue : undefined}
+                onChange={isInputControlled ? setTransitionTestValue : undefined}
+                defaultValue="기본값"
+              />
+              <Text size="1" color="gray" mt="1" as="div">
+                {isInputControlled
+                  ? `현재 값: "${transitionTestValue}"`
+                  : "부모는 값을 모릅니다 (내부에서만 관리)"}
+              </Text>
+            </Box>
+          </Flex>
+
+          <Box p="2" className="bg-orange-50 rounded">
+            <Text size="1" color="orange">
+              ⚠️ 모드를 전환하면 개발자 도구 콘솔에 경고가 표시됩니다.
+              실제 앱에서는 이런 전환을 피해야 합니다.
+            </Text>
+          </Box>
+        </Flex>
+      </Card>
+
       {/* 설명 */}
       <Card mt="4">
         <Flex direction="column" gap="3">
@@ -157,6 +220,14 @@ export function DemoBasic() {
             <Text size="2">
               3. <Text weight="medium">useControlledState</Text>를 사용하면
               동일한 컴포넌트로 두 패턴을 모두 지원할 수 있습니다.
+            </Text>
+            <Text size="2">
+              4.{" "}
+              <Text weight="medium" color="orange">
+                전환 테스트
+              </Text>
+              에서 모드를 바꾸면 양방향 전환 감지가 작동하는 것을 확인할 수
+              있습니다.
             </Text>
           </Flex>
         </Flex>

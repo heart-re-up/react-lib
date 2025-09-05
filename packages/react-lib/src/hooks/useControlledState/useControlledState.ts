@@ -47,8 +47,8 @@ export const useControlledState = <T>(
 
   // 개발 환경에서 잘못된 사용 패턴 경고
   useEffectDev(() => {
-    // uncontrolled to controlled 감지
-    if (wasControlled === false && isControlled === true) {
+    // 제어/비제어 전환 감지 (양방향)
+    if (wasControlled !== undefined && wasControlled !== isControlled) {
       // eslint-disable-next-line no-console
       console.warn(
         `useControlledState: 컴포넌트가 ${wasControlled ? "제어" : "비제어"}에서 ${isControlled ? "제어" : "비제어"}로 전환되었습니다. ` +
@@ -56,7 +56,7 @@ export const useControlledState = <T>(
           "컴포넌트는 생명주기 동안 일관되게 제어되거나 비제어되어야 합니다."
       );
     }
-  }, [isControlled]);
+  }, [isControlled, wasControlled]);
 
   // 현재 값 결정 (제어: 외부 value, 비제어: 내부 state)
   const currentValue = isControlled ? value : internalState;
