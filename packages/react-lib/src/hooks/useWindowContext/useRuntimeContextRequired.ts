@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useRefLatest } from "../useCallbackRef/useCallbackRef";
 import { RuntimeContextRequiredError } from "./RuntimeContextRequiredError";
 import { useRuntimeContext } from "./useRuntimeContext";
 import type {
@@ -40,6 +41,8 @@ export const useRuntimeContextRequired = (
     disabled = false,
   } = props;
 
+  const onViolationRef = useRefLatest(onViolation);
+
   // 현재 런타임 컨텍스트 감지
   const runtimeContext = useRuntimeContext();
   // 요구사항 확인
@@ -62,9 +65,7 @@ export const useRuntimeContextRequired = (
     );
 
     // 콜백 실행
-    if (onViolation) {
-      onViolation(runtimeContextRequiredError);
-    }
+    onViolationRef.current?.(runtimeContextRequiredError);
 
     // 에러 발생
     if (throwOnViolation) {
@@ -77,7 +78,7 @@ export const useRuntimeContextRequired = (
     requiredContexts,
     message,
     throwOnViolation,
-    onViolation,
+    onViolationRef,
   ]);
 
   return {

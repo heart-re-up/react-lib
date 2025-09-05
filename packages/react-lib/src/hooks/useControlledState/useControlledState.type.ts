@@ -15,9 +15,9 @@ export type UseControlledStateProps<T> = {
    * });
    *
    * @example
-   * // ❌ 잘못된 사용 - 조건부 제어
+   * // ❌ 잘못된 사용 - 조건부 제어 (양방향 전환 모두 위험)
    * const [value, setValue] = useControlledState({
-   *   value: condition ? externalValue : undefined,  // 위험!
+   *   value: condition ? externalValue : undefined,  // 위험! 제어↔비제어 전환
    *   onChange: setExternalValue
    * });
    */

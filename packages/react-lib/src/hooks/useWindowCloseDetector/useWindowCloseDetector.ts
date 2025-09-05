@@ -2,6 +2,7 @@ import { useCallback, useMemo, useRef } from "react";
 import { resolveTargetWindow, WindowLike } from "../../libs/window";
 import { useInterval } from "../useInterval";
 import { useVisibilityChange } from "../useVisibility";
+import { useRefLatest } from "../useCallbackRef/useCallbackRef";
 
 export type UseWindowCloseDetectorCallback = (closedWindow: Window) => void;
 
@@ -31,6 +32,7 @@ export const useWindowCloseDetector = (
 ): UseWindowCloseDetectorReturns => {
   const windowRef = useRef<Window | null>(null);
   const visibleRef = useRef<boolean>(false);
+  const callbackRef = useRefLatest(callback);
 
   const close = useCallback(() => {
     if (windowRef.current === null) {
@@ -55,11 +57,11 @@ export const useWindowCloseDetector = (
 
   const checkWindowClosed = useCallback(() => {
     if (windowRef.current?.closed) {
-      callback?.(windowRef.current);
+      callbackRef.current?.(windowRef.current);
       windowRef.current = null;
       stopTrack();
     }
-  }, [windowRef, callback, stopTrack]);
+  }, [windowRef, stopTrack, callbackRef]);
 
   const tryToTrack = useCallback(() => {
     // 브라우저에서 현재 탭이 노출된 상태이며, 닫기를 추적할 윈도우가 있다면 추적 시작

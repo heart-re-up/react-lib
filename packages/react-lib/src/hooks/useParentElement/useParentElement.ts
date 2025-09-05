@@ -31,7 +31,6 @@ export function useParentElement(
   const { observeChanges = true } = options;
   const [parentElement, setParentElement] = useState<HTMLElement | null>(null);
   const parentRef = useRef<HTMLElement | null>(null);
-  const bodyRef = useRef<HTMLElement | null>(isServer ? null : document.body);
 
   const updateParent = useCallback(() => {
     console.log("updateParent in useCallback in useRefParentElement");
@@ -45,15 +44,22 @@ export function useParentElement(
   }, [elementRef]);
 
   // DOM 변화 감지 (observeChanges가 true이고 브라우저 환경일 때만)
-  useMutationObserver({
-    targetRef: bodyRef, // body 전체 감시
+  const { ref: mutationRef } = useMutationObserver({
     callback: updateParent,
     options: {
       childList: true,
       subtree: true,
     },
-    disabled: isServer || !observeChanges,
   });
+
+  // body 에서 전체 변화를 관찰하여 대상 요소의 부모 변화를 감지한다.
+  // 서버이거나 관찰 비활성 시에는 수행하지 않는다.
+  useIsomorphicLayoutEffect(() => {
+    if (isServer || !observeChanges) return;
+    if (document?.body) {
+      mutationRef(document.body);
+    }
+  }, [isServer, observeChanges, mutationRef]);
 
   // 초기 부모 요소 설정
   useIsomorphicLayoutEffect(() => {
