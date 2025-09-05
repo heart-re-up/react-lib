@@ -1,11 +1,11 @@
 import { PostMessageOptions } from "@/libs/window/message";
 import { useCallback, useRef } from "react";
-import { findTargetWindow, WindowLike } from "../../libs/window";
+import { resolveTargetWindow, WindowLike } from "../../libs/window";
 import { useRefLatest } from "../useCallbackRef/useCallbackRef";
 import {
-  UseWindowEventMessageSenderProps,
-  UseWindowEventMessageSenderReturns,
-} from "./useWindowEventMessageSender.type";
+  UseWindowMessageEventSenderProps,
+  UseWindowMessageEventSenderReturns,
+} from "./useWindowMessageEventSender.type";
 import { normalizeOrigin } from "./utils";
 
 /**
@@ -17,7 +17,7 @@ import { normalizeOrigin } from "./utils";
  * @returns 발송자 반환 값
  * @example
  * ```tsx
- * const {postMessage} = useWindowEventMessageSender({
+ * const {postMessage} = useWindowMessageEventSender({
  *   targetWindow: window.parent,
  *   targetOrigin: 'https://www.example.com',
  * });
@@ -27,9 +27,9 @@ import { normalizeOrigin } from "./utils";
  * });
  * ```
  */
-export const useWindowEventMessageSender = (
-  props: UseWindowEventMessageSenderProps
-): UseWindowEventMessageSenderReturns => {
+export const useWindowMessageEventSender = (
+  props: UseWindowMessageEventSenderProps
+): UseWindowMessageEventSenderReturns => {
   const isServer = typeof window === "undefined";
   const {
     targetWindow: targetWindowProp,
@@ -42,7 +42,7 @@ export const useWindowEventMessageSender = (
   // 서버에서는 기본 윈도우를 획득할 수 없다.
   // targetWindow 을 시도하고, 없는 경우 서버가 아닐 때 현재 창을 사용한다.
   const targetWindowRef = useRef<Window | null>(
-    isServer ? null : findTargetWindow(targetWindowProp ?? window)
+    isServer ? null : resolveTargetWindow(targetWindowProp ?? window)
   );
 
   // 대상 오리진
@@ -64,7 +64,7 @@ export const useWindowEventMessageSender = (
    */
   const setTargetWindow = useCallback(
     (target: WindowLike) => {
-      targetWindowRef.current = findTargetWindow(target);
+      targetWindowRef.current = resolveTargetWindow(target);
     },
     [targetWindowRef]
   );

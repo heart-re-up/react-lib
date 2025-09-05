@@ -1,10 +1,10 @@
 import { useEffect } from "react";
+import { RuntimeContextRequiredError } from "./RuntimeContextRequiredError";
 import { useRuntimeContext } from "./useRuntimeContext";
 import type {
   UseRuntimeContextRequiredProps,
   UseRuntimeContextRequiredReturns,
 } from "./useRuntimeContextRequired.type";
-import { RuntimeContextRequiredError } from "./RuntimeContextRequiredError";
 
 /**
  * 특정 런타임 컨텍스트에서만 동작하도록 제한하는 훅
@@ -33,7 +33,7 @@ export const useRuntimeContextRequired = (
   props: UseRuntimeContextRequiredProps
 ): UseRuntimeContextRequiredReturns => {
   const {
-    requiredContexts: required,
+    requiredContexts,
     message,
     throwOnViolation = false,
     onViolation,
@@ -41,25 +41,24 @@ export const useRuntimeContextRequired = (
   } = props;
 
   // 현재 런타임 컨텍스트 감지
-  const currentContext = useRuntimeContext();
+  const runtimeContext = useRuntimeContext();
   // 요구사항 확인
-  const isAllowed = disabled || required.includes(currentContext);
-  const isViolated = !isAllowed;
+  const isViolated = !requiredContexts.includes(runtimeContext);
 
   useEffect(() => {
-    if (disabled || isAllowed) {
+    if (disabled || !isViolated) {
       return;
     }
 
     // 요구사항 위반 시 처리
     const errorMessage =
       message ||
-      `이 기능은 ${required.join(", ")} 환경에서만 사용할 수 있습니다. (현재: ${currentContext})`;
+      `이 기능은 ${requiredContexts.join(", ")} 환경에서만 사용할 수 있습니다. (현재: ${runtimeContext})`;
 
     const runtimeContextRequiredError = new RuntimeContextRequiredError(
       errorMessage,
-      currentContext,
-      required
+      runtimeContext,
+      requiredContexts
     );
 
     // 콜백 실행
@@ -72,20 +71,17 @@ export const useRuntimeContextRequired = (
       throw runtimeContextRequiredError;
     }
   }, [
-    currentContext,
-    isAllowed,
+    runtimeContext,
     isViolated,
     disabled,
-    required,
+    requiredContexts,
     message,
     throwOnViolation,
     onViolation,
   ]);
 
   return {
-    currentContext,
-    isAllowed,
+    runtimeContext,
     isViolated,
-    requiredContexts: required,
   };
 };

@@ -29,7 +29,7 @@ export default function Communicator({
   const [sentMessages, setSentMessages] = useState<MessageData[]>([]);
 
   const { postMessage } = useBroadcastChannel({
-    channelName,
+    initialChannelName: channelName,
     onMessage: (event: MessageEvent) => {
       const message = event.data as MessageData;
       console.log("BroadcastChannel 메시지 수신:", message);

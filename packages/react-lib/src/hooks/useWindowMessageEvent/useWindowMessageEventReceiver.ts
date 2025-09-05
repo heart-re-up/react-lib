@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useRef } from "react";
-import { isTrustedOrigin } from "../../libs/window";
+import { TrustedOrigins } from "../../libs/window";
 import { useRefLatest } from "../useCallbackRef/useCallbackRef";
 import {
-  UseWindowEventMessageReceiverProps,
-  UseWindowEventMessageReceiverReturns,
-} from "./useWindowEventMessageReceiver.type";
+  UseWindowMessageEventReceiverProps,
+  UseWindowMessageEventReceiverReturns,
+} from "./useWindowMessageEventReceiver.type";
 import { normalizeOrigin } from "./utils";
 
 /**
@@ -17,7 +17,7 @@ import { normalizeOrigin } from "./utils";
  * @returns 수신자 반환 값
  * @example
  * ```tsx
- * const receiver = useWindowEventMessageReceiver({
+ * const receiver = useWindowMessageEventReceiver({
  *   trustedOrigins: ['https://www.example.com'],
  *   onMessage: (message) => {
  *     console.log(message);
@@ -28,19 +28,21 @@ import { normalizeOrigin } from "./utils";
  * receiver.setTrustedOrigins(['https://other.example.com']);
  * ```
  */
-export const useWindowEventMessageReceiver = (
-  props: UseWindowEventMessageReceiverProps
-): UseWindowEventMessageReceiverReturns => {
+export const useWindowMessageEventReceiver = (
+  props: UseWindowMessageEventReceiverProps
+): UseWindowMessageEventReceiverReturns => {
   const {
-    trustedOrigins: trustedOriginsProp = [],
-    includeOwnMessage = false,
+    intialTrustedOrigins = [],
     disabled = false,
     onMessage: onMessageProp,
     onMessageFromUntrustedOrigin: onMessageFromUntrustedOriginProp,
   } = props;
+  /** 서버 환경 여부 */
   const isServer = typeof window === "undefined";
+
+  /** 신뢰하는 출처 */
   const trustedOriginsRef = useRef<string[]>(
-    trustedOriginsProp.map(normalizeOrigin)
+    intialTrustedOrigins.map(normalizeOrigin)
   );
 
   /**
@@ -62,40 +64,42 @@ export const useWindowEventMessageReceiver = (
   );
 
   useEffect((): (() => void) => {
-    // disabled 또는 서버 환경이거나 onMessage가 없으면 이벤트 리스너를 등록하지 않습니다.
-    if (disabled || isServer || !onMessageRef.current) {
+    // 처리기 존재 여부
+    const hasHandler =
+      !!onMessageRef.current || !!onMessageFromUntrustedOriginRef.current;
+
+    // disabled 또는 서버 환경이거나 처리기가 없으면 이벤트 리스너를 등록하지 않습니다.
+    if (disabled || isServer || !hasHandler) {
       return () => {};
     }
 
-    const handler = (event: MessageEvent): void => {
-      // 본인이 발송한 메시지인지 여부
-      const isOwnMessage = event.source === window;
-      // 본인이 발송한 메시지를 무시해야하는 경우
-      // includeOwnMessage: 본인이 발송한 메시지도 수신
-      if (isOwnMessage && !includeOwnMessage) {
+    // 리스너
+    const listener = (event: MessageEvent): void => {
+      // 본인이 발송한 메시지를 무시
+      if (event.source === window) {
         // ignore own message
         return;
       }
 
       // Origin 검사
-      if (isTrustedOrigin(event.origin, trustedOriginsRef.current)) {
-        onMessageRef.current?.(event, isOwnMessage);
+      if (TrustedOrigins.from(trustedOriginsRef.current).match(event.origin)) {
+        onMessageRef.current?.(event);
       } else {
         onMessageFromUntrustedOriginRef.current?.(event);
       }
     };
 
-    window.addEventListener("message", handler);
+    // 등록과 정리
+    window.addEventListener("message", listener);
     return () => {
-      window.removeEventListener("message", handler);
+      window.removeEventListener("message", listener);
     };
   }, [
-    onMessageRef,
-    onMessageFromUntrustedOriginRef,
     isServer,
     disabled,
     trustedOriginsRef,
-    includeOwnMessage,
+    onMessageRef,
+    onMessageFromUntrustedOriginRef,
   ]);
 
   return {

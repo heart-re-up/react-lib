@@ -53,6 +53,8 @@ export default defineConfig({
           "hooks/useThrottle",
           "hooks/useTimeout",
           "hooks/useCopyToClipboard",
+          "hooks/useWindowContext",
+          "hooks/useWindowMessageEvent",
         ]),
       },
       formats: ["es", "cjs"],

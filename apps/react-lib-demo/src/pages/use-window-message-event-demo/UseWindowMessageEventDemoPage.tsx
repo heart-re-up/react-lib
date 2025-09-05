@@ -6,7 +6,7 @@ import { DemoOpener } from "./DemoOpener";
 import { DemoPopup } from "./DemoPopup";
 import { relations } from "./relations";
 
-export default function UseWindowEventMessageDemoPage() {
+export default function UseWindowMessageEventDemoPage() {
   const [activeTab, setActiveTab] = useState("opener");
 
   useEffect(() => {
@@ -31,7 +31,7 @@ export default function UseWindowEventMessageDemoPage() {
   return (
     <Box>
       <DemoHeader
-        title="useWindowEventMessage"
+        title="useWindowMessageEvent"
         description="윈도우 간 메시지 통신을 위한 훅입니다. 같은 origin의 다른 윈도우와 안전하게 메시지를 주고받을 수 있으며, 발신자 식별 및 신뢰할 수 있는 출처 검증 기능을 제공합니다."
       />
 

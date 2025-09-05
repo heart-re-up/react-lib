@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useRef } from "react";
-import { findTargetWindow, WindowLike } from "../../libs/window";
+import { resolveTargetWindow, WindowLike } from "../../libs/window";
 import { useInterval } from "../useInterval";
 import { useVisibilityChange } from "../useVisibility";
 
@@ -70,7 +70,7 @@ export const useWindowCloseDetector = (
 
   const setWindow = useCallback(
     (target: WindowLike) => {
-      windowRef.current = findTargetWindow(target);
+      windowRef.current = resolveTargetWindow(target);
       tryToTrack();
     },
     [tryToTrack]

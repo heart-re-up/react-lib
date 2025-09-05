@@ -1,4 +1,4 @@
-import { useWindowEventMessage } from "@heart-re-up/react-lib/hooks/useWindowEventMessage";
+import { useWindowMessageEvent } from "@heart-re-up/react-lib/hooks/useWindowMessageEvent";
 import { Badge, Button, Card, Flex, Text, TextField } from "@radix-ui/themes";
 import { useCallback, useRef, useState } from "react";
 
@@ -21,7 +21,7 @@ export default function DemoParent() {
   ]);
   // iframe 타겟으로 메시지를 전송하는 훅
   const { postMessage, setTargetWindow, setTargetOrigin } =
-    useWindowEventMessage({
+    useWindowMessageEvent({
       trustedOrigins,
       onMessage: (event) => handleMessage(event),
       onError: (error) => {
@@ -179,7 +179,7 @@ export default function DemoParent() {
 
         <Text size="2" color="gray">
           이 페이지는 iframe을 생성하여 자식 페이지를 로드하고,
-          useWindowEventMessage를 통해 통신합니다.
+          useWindowMessageEvent를 통해 통신합니다.
         </Text>
 
         <Flex gap="4" style={{ height: "600px" }}>
@@ -361,7 +361,7 @@ export default function DemoParent() {
                 • <strong>trustedOrigins</strong>: 현재 origin만 신뢰
               </Text>
               <Text size="2" color="blue">
-                • <strong>통신 방식</strong>: useWindowEventMessage 훅 vs 직접
+                • <strong>통신 방식</strong>: useWindowMessageEvent 훅 vs 직접
                 postMessage 비교
               </Text>
             </Flex>

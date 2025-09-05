@@ -1,2 +1,2 @@
-export * from "./WindowEventMessage.util";
+export * from "./location";
 export * from "./WindowTarget";

@@ -1,10 +1,8 @@
-import { useWindowEventMessage } from "@heart-re-up/react-lib/hooks/useWindowEventMessage";
-import { WindowMessage } from "@heart-re-up/react-lib/libs/window";
+import { useWindowMessageEvent } from "@heart-re-up/react-lib/hooks/useWindowMessageEvent";
 import {
   Box,
   Button,
   Card,
-  Code,
   Flex,
   Heading,
   Kbd,
@@ -29,20 +27,15 @@ export default function Communicator({
   name: string;
 }) {
   const [inputMessage, setInputMessage] = useState("");
-  const [receivedMessages, setReceivedMessages] = useState<
-    WindowMessage<MessageData>[]
-  >([]);
-  const [sentMessages, setSentMessages] = useState<
-    WindowMessage<MessageData>[]
-  >([]);
+  const [receivedMessages, setReceivedMessages] = useState<MessageData[]>([]);
+  const [sentMessages, setSentMessages] = useState<MessageData[]>([]);
 
-  const { postMessage } = useWindowEventMessage({
+  const { postMessage } = useWindowMessageEvent({
     targetWindow,
     targetOrigin,
-    onMessage: (message) => {
-      const windowMessage = message as WindowMessage<MessageData>;
-      console.log("메시지 수신:", windowMessage);
-      setReceivedMessages((prev) => [...prev, windowMessage]);
+    onMessage: (event) => {
+      console.log("메시지 수신:", event.data);
+      setReceivedMessages((prev) => [...prev, event.data]);
     },
     onError: (error) => {
       console.error("메시지 통신 오류:", error);
@@ -58,11 +51,9 @@ export default function Communicator({
       from: name,
     };
 
-    const sentMessage = postMessage(messageData);
-    if (sentMessage) {
-      console.log("메시지 전송:", sentMessage);
-      setSentMessages((prev) => [...prev, sentMessage]);
-    }
+    postMessage(messageData);
+    console.log("메시지 전송:", messageData);
+    setSentMessages((prev) => [...prev, messageData]);
     setInputMessage("");
   };
 
@@ -128,7 +119,7 @@ export default function Communicator({
             </Text>
           ) : (
             <Flex direction="column" gap="2">
-              {sentMessages.map((message, index) => (
+              {sentMessages.map(({ content, from }, index) => (
                 <Box
                   key={index}
                   p="3"
@@ -139,15 +130,12 @@ export default function Communicator({
                 >
                   <Flex justify="between" align="start" mb="2">
                     <Text size="2" weight="medium">
-                      {message.payload.content}
+                      {content}
                     </Text>
                     <Text size="1" color="gray">
-                      {new Date(message.timestamp).toLocaleTimeString()}
+                      {from}
                     </Text>
                   </Flex>
-                  <Code size="1">
-                    sender: {message.sender.substring(0, 8)}...
-                  </Code>
                 </Box>
               ))}
             </Flex>
@@ -170,7 +158,7 @@ export default function Communicator({
             </Text>
           ) : (
             <Flex direction="column" gap="2">
-              {receivedMessages.map((message, index) => (
+              {receivedMessages.map(({ content, from }, index) => (
                 <Box
                   key={index}
                   p="3"
@@ -181,16 +169,12 @@ export default function Communicator({
                 >
                   <Flex justify="between" align="start" mb="2">
                     <Text size="2" weight="medium">
-                      {message.payload.content}
+                      {content}
                     </Text>
                     <Text size="1" color="gray">
-                      {new Date(message.timestamp).toLocaleTimeString()}
+                      {from}
                     </Text>
                   </Flex>
-                  <Code size="1">
-                    sender: {message.sender.substring(0, 8)}... | from:{" "}
-                    {message.payload.from}
-                  </Code>
                 </Box>
               ))}
             </Flex>

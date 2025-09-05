@@ -184,14 +184,14 @@ export const menuRoutes: MenuRoute[] = [
       ).then((module) => module.default),
   },
   {
-    id: "window-event-message",
-    path: "/window-event-message",
-    title: "useWindowEventMessage",
+    id: "window-message-event",
+    path: "/window-message-event",
+    title: "useWindowMessageEvent",
     description: "윈도우 간 메시지 통신을 위한 훅",
     category: ["window", "communication"],
     component: async () =>
       import(
-        "@/pages/use-window-event-message-demo/UseWindowEventMessageDemoPage"
+        "@/pages/use-window-message-event-demo/UseWindowMessageEventDemoPage"
       ).then((module) => module.default),
   },
   {

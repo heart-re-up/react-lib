@@ -6,11 +6,14 @@ export type OnBroadcaseChannelErrorHandler = <E extends BroadcastChannelError>(
 ) => void;
 export type UseBroadcastChannelProps = {
   /**
-   * 채널 이름
+   * 초기 채널 이름
    *
-   * 같은 출처에서 같은 채널 이름을 가진 창들과 통신할 수 있습니다.
+   * 초기화에만 관여하는 채널 이름입니다.
+   * 추후 resetBroadcastChannel 을 통해서 채널을 연결할 수 있습니다.
+   *
+   * 초기 채널 이름을 null로 설정하면 초기에 연결을 시도하지 않습니다.
    */
-  channelName: string;
+  initialChannelName: string | null;
 
   /**
    * 채널 사용 비활성화 여부
@@ -37,12 +40,17 @@ export type UseBroadcastChannelReturns = {
   isSupported: boolean;
 
   /**
+   * 채널을 닫습니다.
+   */
+  closeBroadcastChannel: () => void;
+
+  /**
    * 채널 이름을 설정합니다.
    *
-   * 채널 이름을 설정하면 채널 이름을 변경할 수 있습니다.
-   * @param channelName 채널 이름
+   * 채널 이름을 설정하면 채널이 연결됩니다.
+   * 이미 연결된 채널이 있다면, 기존 채널을 닫고 새로운 채널을 연결합니다.
    */
-  setChannelName: (channelName: string) => void;
+  resetBroadcastChannel: (channelName: string) => void;
 
   /**
    * 데이터 메시지 전송 함수

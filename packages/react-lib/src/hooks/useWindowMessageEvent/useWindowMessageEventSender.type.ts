@@ -1,7 +1,7 @@
 import { WindowLike } from "@/libs/window";
 import { PostMessageOptions } from "@/libs/window/message";
 
-export type UseWindowEventMessageSenderProps = {
+export type UseWindowMessageEventSenderProps = {
   /**
    * 메시지를 수신할 대상 윈도우
    *
@@ -33,7 +33,7 @@ export type UseWindowEventMessageSenderProps = {
   onError?: (error: Error) => void;
 };
 
-export type UseWindowEventMessageSenderReturns = {
+export type UseWindowMessageEventSenderReturns = {
   /**
    * 대상 윈도우를 설정합니다.
    *

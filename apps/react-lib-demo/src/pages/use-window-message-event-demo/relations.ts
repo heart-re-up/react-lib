@@ -16,4 +16,14 @@ export const relations: DemoRelationProps[] = [
     name: "useWindowMessageEventReceiver",
     description: "@heart-re-up/react-lib/hooks/useWindowMessageEventReceiver",
   },
+  {
+    type: "hook",
+    name: "useOpenWindow",
+    description: "@heart-re-up/react-lib/hooks/useOpenWindow",
+  },
+  {
+    type: "hook",
+    name: "useBroadcastChannel",
+    description: "@heart-re-up/react-lib/hooks/useBroadcastChannel",
+  },
 ];

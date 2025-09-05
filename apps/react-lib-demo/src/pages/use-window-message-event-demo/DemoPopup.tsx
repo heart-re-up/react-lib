@@ -9,7 +9,7 @@ export function DemoPopup() {
   return (
     <Box>
       <Text size="2" color="gray" mb="4" as="p">
-        이것은 WindowEventMessage Popup(팝업 창) 데모입니다. 이 창은 opener 창과
+        이것은 WindowMessageEvent Popup(팝업 창) 데모입니다. 이 창은 opener 창과
         양방향으로 메시지를 주고받을 수 있습니다. window.opener를 통해 부모 창과
         1:1 통신을 합니다.
       </Text>
@@ -31,7 +31,7 @@ export function DemoPopup() {
               <strong>Origin:</strong> {window.location.origin}
             </Text>
             <Text size="2">
-              <strong>WindowEventMessage 지원:</strong> 예
+              <strong>WindowMessageEvent 지원:</strong> 예
             </Text>
           </Flex>
           <Box mt="3">
@@ -55,10 +55,10 @@ export function DemoPopup() {
         style={{ backgroundColor: "var(--yellow-2)", borderRadius: "6px" }}
       >
         <Heading size="3" mb="2">
-          💡 WindowEventMessage vs BroadcastChannel
+          💡 WindowMessageEvent vs BroadcastChannel
         </Heading>
         <Text size="2" as="p" mb="2">
-          • WindowEventMessage: 특정 창을 지정해서 1:1 통신
+          • WindowMessageEvent: 특정 창을 지정해서 1:1 통신
         </Text>
         <Text size="2" as="p" mb="2">
           • BroadcastChannel: 채널명만으로 자동 연결, 모든 창에 브로드캐스트
