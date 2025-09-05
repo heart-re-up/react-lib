@@ -47,14 +47,26 @@ export const useControlledState = <T>(
 
   // 개발 환경에서 잘못된 사용 패턴 경고
   useEffectDev(() => {
-    // 제어/비제어 전환 감지 (양방향)
-    if (wasControlled !== undefined && wasControlled !== isControlled) {
-      // eslint-disable-next-line no-console
-      console.warn(
-        `useControlledState: 컴포넌트가 ${wasControlled ? "제어" : "비제어"}에서 ${isControlled ? "제어" : "비제어"}로 전환되었습니다. ` +
-          "이는 예측 불가능한 동작을 야기할 수 있습니다. " +
-          "컴포넌트는 생명주기 동안 일관되게 제어되거나 비제어되어야 합니다."
-      );
+    // 초기 렌더링이 아닌 경우에만 전환 감지
+    if (wasControlled !== undefined) {
+      // 비제어 → 제어 전환 감지
+      if (wasControlled === false && isControlled === true) {
+        // eslint-disable-next-line no-console
+        console.warn(
+          `useControlledState: 컴포넌트가 비제어에서 제어로 전환되었습니다. ` +
+            "이는 예측 불가능한 동작을 야기할 수 있습니다. " +
+            "컴포넌트는 생명주기 동안 일관되게 제어되거나 비제어되어야 합니다."
+        );
+      }
+      // 제어 → 비제어 전환 감지
+      if (wasControlled === true && isControlled === false) {
+        // eslint-disable-next-line no-console
+        console.warn(
+          `useControlledState: 컴포넌트가 제어에서 비제어로 전환되었습니다. ` +
+            "이는 예측 불가능한 동작을 야기할 수 있습니다. " +
+            "컴포넌트는 생명주기 동안 일관되게 제어되거나 비제어되어야 합니다."
+        );
+      }
     }
   }, [isControlled, wasControlled]);
 
