@@ -49,12 +49,14 @@ export const useControlledState = <T>(
   useEffectDev(() => {
     // 제어/비제어 전환 감지 (양방향)
     if (wasControlled !== undefined && wasControlled !== isControlled) {
+      const warningMessages = [
+        `useControlledState: 컴포넌트가 ${wasControlled ? "제어" : "비제어"}에서 ${isControlled ? "제어" : "비제어"}로 전환되었습니다.`,
+        "이는 예측 불가능한 동작을 야기할 수 있습니다.",
+        "컴포넌트는 생명주기 동안 일관되게 제어되거나 비제어되어야 합니다."
+      ];
+      
       // eslint-disable-next-line no-console
-      console.warn(
-        `useControlledState: 컴포넌트가 ${wasControlled ? "제어" : "비제어"}에서 ${isControlled ? "제어" : "비제어"}로 전환되었습니다. ` +
-          "이는 예측 불가능한 동작을 야기할 수 있습니다. " +
-          "컴포넌트는 생명주기 동안 일관되게 제어되거나 비제어되어야 합니다."
-      );
+      console.warn(warningMessages.join(" "));
     }
   }, [isControlled, wasControlled]);
 
