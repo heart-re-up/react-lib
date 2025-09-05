@@ -1,4 +1,5 @@
 import { useCallback } from "react";
+import { useRefLatest } from "../useCallbackRef/useCallbackRef";
 import { ElementTarget, useEventListener } from "../useEventListener";
 
 export type UseKeyDownOptions<T extends EventTarget> = {
@@ -20,6 +21,8 @@ export const useKeyDown = <T extends EventTarget>(
     element,
   } = options ?? {};
 
+  const callbackRef = useRefLatest(callback);
+
   const handleKeydown = useCallback(
     (event: KeyboardEvent | Event): void => {
       if (disabled) return;
@@ -33,10 +36,10 @@ export const useKeyDown = <T extends EventTarget>(
         if (stopPropagation) {
           keyboardEvent.stopPropagation();
         }
-        callback?.(keyboardEvent, keyboardEvent.key);
+        callbackRef.current?.(keyboardEvent, keyboardEvent.key);
       }
     },
-    [disabled, preventDefault, stopPropagation, targetKeys, callback]
+    [disabled, preventDefault, stopPropagation, targetKeys, callbackRef]
   );
 
   return useEventListener("keydown", handleKeydown, element, {

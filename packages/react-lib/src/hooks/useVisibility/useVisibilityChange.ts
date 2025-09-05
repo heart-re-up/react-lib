@@ -1,5 +1,7 @@
 import { useEventListener } from "../useEventListener";
 import { isVisible } from "./utils";
+import { useRefLatest } from "../useCallbackRef/useCallbackRef";
+import { useCallback } from "react";
 
 export type UseVisibilityChangeProps = (visible: boolean) => void;
 
@@ -14,8 +16,11 @@ export type UseVisibilityChangeReturns = void;
 export const useVisibilityChange = (
   callback?: UseVisibilityChangeProps
 ): UseVisibilityChangeReturns => {
-  callback?.(isVisible()); // 초기 상태 반환
-  useEventListener("visibilitychange", () => {
-    callback?.(isVisible());
-  });
+  const callbackRef = useRefLatest(callback);
+  // 초기 상태 반환 (최신 콜백 참조)
+  callbackRef.current?.(isVisible());
+  const handleVisibilityChange = useCallback(() => {
+    callbackRef.current?.(isVisible());
+  }, [callbackRef]);
+  useEventListener("visibilitychange", handleVisibilityChange);
 };

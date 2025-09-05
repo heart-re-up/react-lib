@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useRefLatest } from "../useCallbackRef/useCallbackRef";
 
 export type UseProgressCounterProps = {
   onChangeCount?: (count: number) => void;
@@ -17,6 +18,8 @@ export const useProgressCounter = (
   props?: UseProgressCounterProps
 ): UseProgressCounterReturns => {
   const { onChangeCount, onChangeProgress } = props || {};
+  const onChangeCountRef = useRefLatest(onChangeCount);
+  const onChangeProgressRef = useRefLatest(onChangeProgress);
   const [count, setCount] = useState(0);
   const progress = useMemo(() => count > 0, [count]);
 
@@ -33,9 +36,9 @@ export const useProgressCounter = (
   }, [setCount]);
 
   useEffect(() => {
-    onChangeCount?.(count);
-    onChangeProgress?.(progress);
-  }, [onChangeCount, onChangeProgress, count, progress]);
+    onChangeCountRef.current?.(count);
+    onChangeProgressRef.current?.(progress);
+  }, [count, progress, onChangeCountRef, onChangeProgressRef]);
 
   return useMemo(
     () => ({

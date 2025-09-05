@@ -5,6 +5,7 @@ import type {
   UseRuntimeContextRequiredReturns,
 } from "./useRuntimeContextRequired.type";
 import { RuntimeContextRequiredError } from "./RuntimeContextRequiredError";
+import { useRefLatest } from "../useCallbackRef/useCallbackRef";
 
 /**
  * 특정 런타임 컨텍스트에서만 동작하도록 제한하는 훅
@@ -40,6 +41,8 @@ export const useRuntimeContextRequired = (
     disabled = false,
   } = props;
 
+  const onViolationRef = useRefLatest(onViolation);
+
   // 현재 런타임 컨텍스트 감지
   const currentContext = useRuntimeContext();
   // 요구사항 확인
@@ -63,9 +66,7 @@ export const useRuntimeContextRequired = (
     );
 
     // 콜백 실행
-    if (onViolation) {
-      onViolation(runtimeContextRequiredError);
-    }
+    onViolationRef.current?.(runtimeContextRequiredError);
 
     // 에러 발생
     if (throwOnViolation) {
@@ -79,7 +80,7 @@ export const useRuntimeContextRequired = (
     required,
     message,
     throwOnViolation,
-    onViolation,
+    onViolationRef,
   ]);
 
   return {

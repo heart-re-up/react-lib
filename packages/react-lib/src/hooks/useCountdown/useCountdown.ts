@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useRefLatest } from "../useCallbackRef/useCallbackRef";
 
 export type UseCountdownOptions = {
   /** 보고 간격 (milliseconds) - 기본값: 1000ms */
@@ -42,6 +43,7 @@ const DEFAULT_OPTIONS: Required<UseCountdownOptions> = {
 
 export const useCountdown = (props: UseCountdownProps): UseCountdownReturns => {
   const { duration, options, onComplete } = props;
+  const onCompleteRef = useRefLatest(onComplete);
 
   const [remainingTime, setRemainingTime] = useState(duration);
   const [isRunning, setIsRunning] = useState(false);
@@ -133,9 +135,9 @@ export const useCountdown = (props: UseCountdownProps): UseCountdownReturns => {
         intervalRef.current = null;
       }
       endTimeRef.current = null;
-      onComplete?.();
+      onCompleteRef.current?.();
     }
-  }, [onComplete]);
+  }, [onCompleteRef]);
 
   // 정확한 시간 계산 함수 (computeFrame 간격으로 실행)
   const updateCountdown = useCallback(() => {
@@ -163,7 +165,7 @@ export const useCountdown = (props: UseCountdownProps): UseCountdownReturns => {
         intervalRef.current = null;
       }
       endTimeRef.current = null;
-      onComplete?.();
+      onCompleteRef.current?.();
       return;
     }
 
@@ -194,7 +196,7 @@ export const useCountdown = (props: UseCountdownProps): UseCountdownReturns => {
       // delta를 고려하여 다음 UI 업데이트 시간 조절
       nextUIUpdateTimeRef.current = now + adjustedNextInterval;
     }
-  }, [onComplete]);
+  }, [onCompleteRef]);
 
   const start = useCallback(() => {
     if (isRunningRef.current) return;

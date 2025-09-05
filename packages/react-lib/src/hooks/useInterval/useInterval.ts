@@ -1,4 +1,5 @@
 import { useCallback, useRef } from "react";
+import { useRefLatest } from "../useCallbackRef/useCallbackRef";
 
 export type UseIntervalProps = {
   /** 타임아웃 이후 실행될 액션 */
@@ -16,10 +17,13 @@ export type UseIntervalReturns = {
 };
 
 export const useInterval = (props: UseIntervalProps): UseIntervalReturns => {
-  const { action, delay } = props;
+  const { action, delay, onStart, onCanceled } = props;
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const actionRef = useRef(action);
   const delayRef = useRef(delay);
+
+  const onStartRef = useRefLatest(onStart);
+  const onCanceledRef = useRefLatest(onCanceled);
 
   if (intervalRef.current !== null && delayRef.current !== delay) {
     throw new Error(
@@ -40,15 +44,17 @@ export const useInterval = (props: UseIntervalProps): UseIntervalReturns => {
     if (intervalRef.current) {
       clearTimeout(intervalRef.current); // clearInterval -> clearTimeout 수정
       intervalRef.current = null;
+      onCanceledRef.current?.();
     }
-  }, []);
+  }, [onCanceledRef]);
 
   const start = useCallback(() => {
     cancel();
     intervalRef.current = setInterval(() => {
       actionRef.current(); // 최신 action 실행
     }, delay);
-  }, [cancel, delay]); // action 의존성 제거
+    onStartRef.current?.();
+  }, [cancel, delay, onStartRef]); // action 의존성 제거
 
   return { cancel, start };
 };

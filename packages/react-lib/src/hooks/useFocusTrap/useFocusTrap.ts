@@ -26,8 +26,7 @@ export const useFocusTrap = (
   // 포커스 할 요소만 필터링
   const { ref: focusableElementsRef, focusableElements } = useFocusableElements(
     {
-      observeChange: !disabled, // disabled가 false일 때 true로 설정
-      debounceObserving: 200,
+      debounceDelay: 200,
     }
   );
 
@@ -103,11 +102,10 @@ export const useFocusTrap = (
   }, [disabled, handleKeyDown, cleanupKeydown]);
 
   // 키보드 이벤트 처리
-  // useEffect(() => {
-  //   console.log("useFocusTrap", "useEffect");
-  //   setupKeydown();
-  //   return cleanupKeydown;
-  // }, [cleanupKeydown, setupKeydown]);
+  useEffect(() => {
+    setupKeydown();
+    return cleanupKeydown;
+  }, [cleanupKeydown, setupKeydown]);
 
   // 자동 포커스 처리
   useEffect(() => {
