@@ -19,6 +19,8 @@
         "clean": "rimraf .turbo dist node_modules"
     },
     "dependencies": {
+        "@heart-re-up/history-manager": "workspace:*",
+        "@heart-re-up/history-manager-react": "workspace:*",
         "@heart-re-up/react-lib": "workspace:*",
         "@radix-ui/react-accordion": "^1.2.2",
         "@radix-ui/react-separator": "^1.1.1",
@@ -41,7 +43,7 @@
         "@heart-re-up/prettier-config": "workspace:*",
         "@heart-re-up/typescript-config": "workspace:*",
         "@types/lodash-es": "^4.17.12",
-        "@types/node": "^20.19.11",
+        "@types/node": "^22.18.1",
         "@types/react": "^19.1.6",
         "@types/react-dom": "^19.1.5",
         "@vitejs/plugin-react": "^4.5.1",

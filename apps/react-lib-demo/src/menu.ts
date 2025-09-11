@@ -8,7 +8,8 @@ export type MenuCategory =
   | "event"
   | "focus"
   | "window"
-  | "communication";
+  | "communication"
+  | "navigation";
 
 export type MenuRoute = {
   id: string;
@@ -204,6 +205,52 @@ export const menuRoutes: MenuRoute[] = [
       import(
         "@/pages/use-broadcast-channel-demo/UseBroadcastChannelDemoPage"
       ).then((module) => module.default),
+  },
+  {
+    id: "history-manager",
+    path: "/history-manager",
+    title: "History Manager",
+    description: "브라우저 히스토리를 활용한 모달 및 네비게이션 상태 관리",
+    category: ["navigation", "state"],
+    component: async () =>
+      import("@/pages/history-manager-demo/HistoryManagerDemoPage").then(
+        (module) => module.default
+      ),
+  },
+  {
+    id: "history-manager-page-a",
+    path: "/history-manager/page-a",
+    title: "History Manager - Page A",
+    description: "History Manager 실제 페이지 A",
+    category: ["navigation", "state"],
+    component: async () =>
+      import("@/pages/history-manager-demo/real-page/PageA").then(
+        (module) => module.PageA
+      ),
+  },
+  {
+    id: "history-manager-page-b",
+    path: "/history-manager/page-b",
+    title: "History Manager - Page B",
+    description: "History Manager 실제 페이지 B",
+    category: ["navigation", "state"],
+    hidden: true,
+    component: async () =>
+      import("@/pages/history-manager-demo/real-page/PageB").then(
+        (module) => module.PageB
+      ),
+  },
+  {
+    id: "history-manager-page-c",
+    path: "/history-manager/page-c",
+    title: "History Manager - Page C",
+    description: "History Manager 실제 페이지 C",
+    hidden: true,
+    category: ["navigation", "state"],
+    component: async () =>
+      import("@/pages/history-manager-demo/real-page/PageC").then(
+        (module) => module.PageC
+      ),
   },
   {
     id: "iframe",

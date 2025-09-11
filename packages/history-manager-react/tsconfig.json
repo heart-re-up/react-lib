@@ -1,0 +1,13 @@
+{
+  "extends": "@heart-re-up/typescript-config/lib",
+  "compilerOptions": {
+    "composite": false,
+    "jsx": "react-jsx",
+    "baseUrl": ".",
+    "paths": {
+      "@heart-re-up/history-manager/*": ["../history-manager/src/*"]
+    }
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx", "vite-env.d.ts"],
+  "exclude": ["node_modules", "dist", "dev", "**/*.test.ts", "**/*.test.tsx"]
+}

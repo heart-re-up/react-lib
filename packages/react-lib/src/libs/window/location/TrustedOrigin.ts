@@ -1,5 +1,5 @@
 import { isExactOrigin } from "./origin/ExactOrigin";
-import { ValidOrigin } from "./ValidOrigin";
+import { ValidOrigin } from "./origin/ValidOrigin";
 
 export class TrustedOrigins {
   static from(validOrigins: ValidOrigin[]): TrustedOrigins {

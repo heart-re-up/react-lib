@@ -35,6 +35,10 @@ export default [
       "react/prop-types": "off",
       "react/jsx-no-target-blank": "warn",
       "react/jsx-key": "warn",
+
+      // 리액트 컴포넌트에 적용되는 관대한 규칙
+      "@typescript-eslint/explicit-function-return-type": "off",
+      "@typescript-eslint/explicit-module-boundary-types": "off",
     },
   },
 ];
