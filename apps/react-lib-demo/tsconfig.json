@@ -4,7 +4,13 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
-      "@heart-re-up/react-lib/*": ["../../packages/react-lib/src/*"]
+      "@heart-re-up/react-lib/*": ["../../packages/react-lib/src/*"],
+      "@heart-re-up/history-manager/*": [
+        "../../packages/history-manager/src/*"
+      ],
+      "@heart-re-up/history-manager-react": [
+        "../../packages/history-manager-react/src/index.ts"
+      ]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "vite-env.d.ts"],

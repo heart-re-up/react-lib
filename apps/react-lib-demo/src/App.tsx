@@ -1,3 +1,4 @@
+import { HistoryManagerContextProvider } from "@heart-re-up/history-manager-react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createBrowserRouter, RouterProvider } from "react-router";
 import { routes } from "./routes";
@@ -14,7 +15,9 @@ function App() {
   });
   return (
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
+      <HistoryManagerContextProvider>
+        <RouterProvider router={router} />
+      </HistoryManagerContextProvider>
     </QueryClientProvider>
   );
 }

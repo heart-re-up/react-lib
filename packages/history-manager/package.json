@@ -1,21 +1,13 @@
 {
-    "name": "@heart-re-up/react-lib",
+    "name": "@heart-re-up/history-manager",
     "version": "1.0.0",
-    "description": "React Hooks Library",
+    "description": "History manager for virtualized navigation",
     "private": false,
-    "main": "./dist/index.cjs",
-    "module": "./dist/index.js",
-    "types": "./dist/index.d.ts",
     "exports": {
-        "./hooks/*": {
-            "types": "./dist/hooks/*.d.ts",
-            "import": "./dist/hooks/*.js",
-            "require": "./dist/hooks/*.cjs"
-        },
-        "./contexts/*": {
-            "types": "./dist/contexts/*.d.ts",
-            "import": "./dist/contexts/*.js",
-            "require": "./dist/contexts/*.cjs"
+        "./*": {
+            "types": "./dist/*.d.ts",
+            "import": "./dist/*.js",
+            "require": "./dist/*.cjs"
         }
     },
     "files": [
@@ -38,10 +30,6 @@
         "prebuild": "rimraf dist",
         "prepublishOnly": "pnpm test && pnpm build"
     },
-    "peerDependencies": {
-        "react": ">=19",
-        "react-dom": ">=19"
-    },
     "devDependencies": {
         "@heart-re-up/eslint-config": "workspace:*",
         "@heart-re-up/prettier-config": "workspace:*",
@@ -56,8 +44,6 @@
         "@vitest/coverage-v8": "^1.0.0",
         "@vitest/ui": "^1.0.0",
         "jsdom": "^23.0.0",
-        "react": "^19.1.0",
-        "react-dom": "^19.1.0",
         "rimraf": "^6.0.1",
         "typescript": "~5.8.3",
         "vite": "^7.1.3",

@@ -14,6 +14,7 @@ const categoryColors: Record<string, string> = {
   focus: "bg-purple-100 text-purple-800",
   window: "bg-indigo-100 text-indigo-800",
   communication: "bg-pink-100 text-pink-800",
+  navigation: "bg-cyan-100 text-cyan-800",
 };
 
 const categoryLabels: Record<string, string> = {
@@ -24,6 +25,7 @@ const categoryLabels: Record<string, string> = {
   focus: "포커스",
   window: "윈도우",
   communication: "통신",
+  navigation: "네비게이션",
 };
 
 export default function HomeItemCard({ item }: HomeItemCardProps) {
