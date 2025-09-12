@@ -3,10 +3,10 @@
  */
 
 import { NodeManager } from "../node";
-import { HistoryProxy } from "../proxy";
 import { HistoryState } from "../types";
-import { HistoryNode } from "../types/HistoryNode";
+import { HistoryNodeChangeEventHandler } from "../types/HistoryNodeChangeEvent";
 import { HistoryOptions } from "../types/HistoryOptions";
+import { OnBeforePushEventHandler } from "../types/OnBeforePushEventListener";
 
 /**
  * 네비게이션 방향
@@ -26,7 +26,9 @@ export const NODE_KEY = "__n__" as const;
 /**
  * 히스토리 관리자 인터페이스
  */
-export interface HistoryManager {
+export interface HistoryManager
+  extends OnBeforePushEventHandler,
+    HistoryNodeChangeEventHandler {
   /** 히스토리 추가 */
   push<T = unknown>(
     data: T,
@@ -50,29 +52,5 @@ export interface HistoryManager {
   /** 특정 위치로 이동 */
   go(delta: number): void;
 
-  /** 네비게이션 리스너 추가 */
-  addNavigationListener(listener: NavigationListener): void;
-
-  /** 네비게이션 리스너 제거 */
-  removeNavigationListener(listener: NavigationListener): void;
-
   getNodeManager(): NodeManager;
-
-  getHistoryProxy(): HistoryProxy;
-}
-
-/**
- * 네비게이션 리스너
- */
-export type NavigationListener = (event: NavigationChangeEvent) => void;
-
-/**
- * 네비게이션 변경 이벤트
- */
-export interface NavigationChangeEvent {
-  type: "push" | "replace" | "pop";
-  delta: number;
-  previous: HistoryNode;
-  current?: HistoryNode;
-  traversal?: HistoryNode[]; // 경로상의 모든 노드
 }

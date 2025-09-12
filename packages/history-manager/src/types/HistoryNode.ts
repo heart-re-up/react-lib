@@ -10,7 +10,7 @@ export type HistoryNode = {
   /** 초기 노드 여부 */
   initial?: true;
   /** URL 경로 */
-  pathname?: string;
+  pathname: string;
   /** 포지션 */
   position: number;
   /** Affinity 정보 */
@@ -19,6 +19,12 @@ export type HistoryNode = {
   sealed?: boolean;
   /** 사용자 정의 메타데이터. HistoryManager 스코프에서 참조하지 않는다. */
   metadata?: Record<string, unknown>;
+  /**
+   * 노드 생성 소스(기원)
+   * - managed: 의도적으로 생성된 관리 노드
+   * - intercepted: 누군가가 window.history 에 수행한 작업을 인터셉트한 노드
+   */
+  source: "managed" | "intercepted";
 };
 
 /**

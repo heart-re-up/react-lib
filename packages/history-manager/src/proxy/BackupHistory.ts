@@ -14,14 +14,13 @@ class BackupStateChangeFunctions {
    */
   backupOriginalMethods(history: History = window.history): void {
     if (this.initialized) {
-      console.debug("BackupHistory backupOriginalMethods already initialized");
+      console.warn("BackupHistory backupOriginalMethods already initialized");
       return;
     }
     // 원본 메서드 백업
     this.pushState = history.pushState.bind(history);
     this.replaceState = history.replaceState.bind(history);
     this.initialized = true;
-    console.debug("BackupHistory backupOriginalMethods initialized");
   }
 
   /**

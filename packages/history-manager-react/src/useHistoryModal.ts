@@ -39,8 +39,8 @@ export type UseHistoryModalReturns<T> = UseHistoryReturns<T> & {
 export function useHistoryModal<T = unknown>(
   options: UseHistoryModalOptions
 ): UseHistoryModalReturns<T> {
-  const { keepOpenOnForwardExit = false, ...historyOptions } = options;
-  const { key } = historyOptions;
+  const { keepOpenOnForwardExit = false, ...useHistoryOptions } = options;
+  const { key } = useHistoryOptions;
   const [opened, setOpened] = useState(false);
   const manager = use(HistoryManagerContext);
 
@@ -52,25 +52,21 @@ export function useHistoryModal<T = unknown>(
 
   // useHistory 훅 사용 (onEnter/onExit 콜백 오버라이드)
   const historyHook = useHistory<T>({
-    ...historyOptions,
+    ...useHistoryOptions,
     onEnter: (direction) => {
-      console.debug("useHistoryModal onEnter:", key, direction);
       setOpened(true);
-      // 원래 onEnter 콜백이 있다면 호출
-      historyOptions.onEnter?.(direction);
+      useHistoryOptions.onEnter?.(direction); // 원래 콜백 받아야 하는 대상을 호출
     },
     onExit: (direction) => {
-      console.debug("useHistoryModal onExit:", key, direction);
+      // backward exit은 항상 모달 닫기
       if (direction === "backward") {
-        // backward exit은 항상 모달 닫기
-        setOpened(false);
-      } else if (!keepOpenOnForwardExit) {
-        // forward exit은 옵션에 따라 결정
         setOpened(false);
       }
-
-      // 원래 onExit 콜백이 있다면 호출
-      historyOptions.onExit?.(direction);
+      // forward exit은 옵션에 따라 결정
+      else if (!keepOpenOnForwardExit) {
+        setOpened(false);
+      }
+      useHistoryOptions.onExit?.(direction); // 원래 콜백 받아야 하는 대상을 호출
     },
   });
 
@@ -93,30 +89,44 @@ export function useHistoryModal<T = unknown>(
     const nodes = nm.nodes;
     const position = nm.position;
     const currentNode = nm.currentNode;
-    console.debug(
-      "useHistoryModal shouldBeOpened",
-      key,
-      nodes,
-      position,
-      currentNode
-    );
-    const isMeCurrentNode = currentNode.metadata?.key === key;
-    const isMeInForwardHistory = nodes
-      // 현재 노드를 제외한 전방 히스토리에 있으면 중복 푸시 금지
-      .slice(0, position)
-      .some((node) => node.metadata?.key === key);
-
-    if (keepOpenOnForwardExit) {
-      return isMeCurrentNode || isMeInForwardHistory;
-    } else {
-      return isMeCurrentNode;
+    const ownNode = nodes.find((node) => node.metadata?.key === key);
+    // 현재 노드가 자신인 경우
+    if (currentNode === ownNode) {
+      // 봉인되지 않으면 열려야 한다.
+      console.log(
+        "useHistoryModal shouldBeOpened: currentNode === ownNode",
+        key,
+        !ownNode.sealed
+      );
+      return !ownNode.sealed;
+    }
+    // 현재 노드가 자신이 아닌 경우, 기본적으로 모달이 닫혀야 한다.
+    // 단, keepOpenOnForwardExit 옵션에 의해서 현재 내가 아니라도 이미 히스토리에 있다면 모달 열려야 한다.
+    else {
+      const isMeInForwardHistory = nodes
+        // 현재 노드를 제외한 전방 히스토리에 있으면 중복 푸시 금지
+        .slice(0, position)
+        .some((node) => node.metadata?.key === key);
+      console.log(
+        "useHistoryModal shouldBeOpened: currentNode !== ownNode",
+        key,
+        keepOpenOnForwardExit && isMeInForwardHistory && !ownNode?.sealed
+      );
+      return keepOpenOnForwardExit && isMeInForwardHistory && !ownNode?.sealed;
     }
   }, [manager, key, keepOpenOnForwardExit]);
 
-  // 초기 상태 설정
+  // 컴포넌트가 등록될 때마다 렌더전에 실행
   useLayoutEffect(() => {
-    setOpened(shouldBeOpened());
-  }, [shouldBeOpened, key]);
+    const nm = manager.getNodeManager();
+    // 훅이 초기화 될 떄, 모달을 열어야 하는지 여부 설정
+    const currNode = nm.currentNode;
+    const ownNode = nm.nodes.find((node) => node.metadata?.key === key);
+    // 현재노드가 자신 노드이고, 자신 노드가 봉인되어 있다면 뒤로가기
+    if (currNode === ownNode && ownNode?.sealed) {
+      manager.back();
+    }
+  }, [key, manager]);
 
   return {
     ...historyHook,

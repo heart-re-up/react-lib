@@ -55,6 +55,10 @@ export default defineConfig({
           "hooks/useCopyToClipboard",
           "hooks/useWindowContext",
           "hooks/useWindowMessageEvent",
+          // Libs
+          "libs/array",
+          "libs/runtime",
+          "libs/window",
         ]),
       },
       formats: ["es", "cjs"],

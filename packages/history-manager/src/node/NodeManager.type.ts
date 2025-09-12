@@ -1,12 +1,12 @@
-import { NavigationChangeEvent } from "../core/HistoryManager.type";
 import { HistoryNode } from "../types/HistoryNode";
 import { HistoryOptions } from "../types/HistoryOptions";
 import { HistoryState } from "../types/HistoryState";
+import { HistoryNodeChangeEventHandler } from "../types/HistoryNodeChangeEvent";
 
 /**
  * 노드 관리자 인터페이스
  */
-export interface NodeManager {
+export interface NodeManager extends HistoryNodeChangeEventHandler {
   /** 현재 노드 목록 (읽기 전용) */
   readonly nodes: readonly Readonly<HistoryNode>[];
 
@@ -24,24 +24,26 @@ export interface NodeManager {
   /** 노드 찾기 */
   find(finder: PredicateHistoryNode): Readonly<HistoryNode> | undefined;
 
-  findNodeById(id: string): Readonly<HistoryNode> | undefined;
-
   /** push 요청 처리 */
-  requestPush<T = unknown>(
+  onPush<T = unknown>(
     data: T,
     url?: string | URL | null,
     options?: HistoryOptions
   ): Readonly<HistoryState<T>>;
 
   /** replace 요청 처리 */
-  requestReplace<T = unknown>(
+  onReplace<T = unknown>(
     data: T,
     url?: string | URL | null,
     options?: HistoryOptions
   ): Readonly<HistoryState<T>>;
 
-  /** pop 이벤트 처리 */
-  onPopState(state: HistoryState): void;
+  /**
+   * pop 이벤트 처리
+   * @param state pop 이벤트 발생 후 현재 상태
+   * @returns 이동할 히스토리 델타(이동거리)로써, 해당 상태에 의해서 추가 이동이 필요한 경우 0이 아님.
+   */
+  onPopState(state: unknown): number | undefined;
 
   seal(id: string): void;
 
@@ -50,15 +52,6 @@ export interface NodeManager {
   sealAffinity(affinityId: string): void;
 
   unsealAffinity(affinityId: string): void;
-
-  /** 네비게이션 동작 수행 필요 콜백 설정 */
-  setOnNavigate(onNavigate: OnNavigate): void;
-
-  /** 네비게이션 리스너 추가 */
-  addNavigationListener(listener: NavigationEventListener): void;
-
-  /** 네비게이션 리스너 제거 */
-  removeNavigationListener(listener: NavigationEventListener): void;
 }
 
 /**
@@ -69,20 +62,3 @@ export type PredicateHistoryNode = (
   index: number,
   obj: readonly HistoryNode[]
 ) => boolean;
-
-/**
- * 네비게이션 이벤트 리스너
- */
-export type NavigationEventListener = (event: NavigationChangeEvent) => void;
-
-// 네비게이션 동작 수행 필요 콜백
-export type OnNavigate = (delta: number) => void;
-
-/**
- * 스토리지 인터페이스
- */
-export interface Storage<T> {
-  save(data: T): void;
-  restore(defaultValue: T): T;
-  clear(): void;
-}
