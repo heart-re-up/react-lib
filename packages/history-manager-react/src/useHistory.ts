@@ -1,11 +1,10 @@
+import { NavigationDirection } from "@heart-re-up/history-manager/core";
 import {
-  NavigationChangeEvent,
-  NavigationDirection,
-} from "@heart-re-up/history-manager/core";
-import {
+  HistoryNode,
   HistoryOptions,
   HistoryState,
 } from "@heart-re-up/history-manager/types";
+import { HistoryNodeChangeEvent } from "@heart-re-up/history-manager/types/HistoryNodeChangeEvent";
 import { use, useCallback, useLayoutEffect } from "react";
 import { HistoryManagerContext } from "./HistoryManagerContext";
 
@@ -39,7 +38,6 @@ export type UseHistoryOptions = {
    * - 'not-current': 현재 노드가 아닐 때만 중복 푸시 허용 (기본값)
    */
   duplicatePushPolicy?: DuplicatePushPolicy;
-
   /**
    * 진입 콜백
    * @param direction 네비게이션 방향
@@ -51,6 +49,13 @@ export type UseHistoryOptions = {
    * @param direction 네비게이션 방향
    */
   onExit?: (direction: NavigationDirection) => void;
+
+  /**
+   * 히스토리 노드 변경 콜백
+   * @param previous 이전 히스토리 노드
+   * @param current 현재 히스토리 노드
+   */
+  onNodeChanged?: (previous: HistoryNode, current: HistoryNode) => void;
 };
 
 /**
@@ -87,6 +92,7 @@ export function useHistory<T = unknown>(
     duplicatePushPolicy = "no-forward",
     onEnter,
     onExit,
+    onNodeChanged,
   } = options;
   const manager = use(HistoryManagerContext);
 
@@ -143,7 +149,6 @@ export function useHistory<T = unknown>(
   // push 메서드
   const push = useCallback(
     (data: T, url?: string, options?: HistoryOptions) => {
-      console.debug("useHistory push", data, url, options);
       if (!canPush()) {
         return null;
       }
@@ -162,7 +167,6 @@ export function useHistory<T = unknown>(
   // replace 메서드
   const replace = useCallback(
     (data: T, url?: string, options?: HistoryOptions) => {
-      console.debug("useHistory replace", data, url, options);
       return manager.replace(data, url, {
         ...options,
         affinity,
@@ -193,13 +197,15 @@ export function useHistory<T = unknown>(
 
   // 네비게이션 이벤트 리스너
   useLayoutEffect(() => {
-    const listener = (event: NavigationChangeEvent): void => {
-      const { delta, previous, current, traversal } = event;
+    const nodeChangeListener = (event: HistoryNodeChangeEvent): void => {
+      const { delta, traversal } = event;
       const direction = delta > 0 ? "forward" : "backward";
+      const prevNode = traversal[0];
+      const currNode = traversal[traversal.length - 1];
 
       // metadata.key로 자신의 노드 식별
-      const isEnter = current?.metadata?.key === key;
-      const isExit = previous.metadata?.key === key;
+      const isEnter = currNode?.metadata?.key === key;
+      const isExit = prevNode.metadata?.key === key;
 
       // traversal 중간 노드에서 자신을 찾기 (current와 previous 제외)
       const isTraversedThrough = traversal
@@ -212,13 +218,15 @@ export function useHistory<T = unknown>(
         // 직접 탈출하거나, 중간 경로에서 건너뛰어진 경우 모두 exit 처리
         onExit?.(direction);
       }
+
+      onNodeChanged?.(prevNode, currNode);
     };
 
-    manager.addNavigationListener(listener);
+    manager.addHistoryNodeChangeEventListener(nodeChangeListener);
     return () => {
-      manager.removeNavigationListener(listener);
+      manager.removeHistoryNodeChangeEventListener(nodeChangeListener);
     };
-  }, [manager, key, onEnter, onExit]);
+  }, [manager, key, onEnter, onExit, onNodeChanged]);
 
   return {
     push,

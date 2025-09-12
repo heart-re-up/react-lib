@@ -1,10 +1,11 @@
-import { getNodeManager, NodeManager, satisfiesManagedState } from "../node";
+import { getNodeManager, NodeManager } from "../node";
 import { HistoryProxy } from "../proxy";
 import { getHistoryProxy } from "../proxy/HistoryProxy";
-import { HistoryNode } from "../types/HistoryNode";
+import { HistoryNodeChangeEventListener } from "../types/HistoryNodeChangeEvent";
 import { HistoryOptions } from "../types/HistoryOptions";
-import { HistoryState, isHistoryState } from "../types/HistoryState";
-import { HistoryManager, NavigationListener } from "./HistoryManager.type";
+import { HistoryState } from "../types/HistoryState";
+import { OnBeforePushEventListener } from "../types/OnBeforePushEventListener";
+import { HistoryManager } from "./HistoryManager.type";
 
 /**
  * 히스토리 관리자 구현체
@@ -13,26 +14,65 @@ export class HistoryManagerImpl implements HistoryManager {
   private readonly nodeManager: NodeManager = getNodeManager();
   private readonly history = getHistoryProxy();
 
+  private onBeforePushEventListeners: Set<OnBeforePushEventListener> =
+    new Set();
+
   constructor(history: History = window.history) {
-    console.debug("HistoryManagerImpl constructor", history);
     // 노드 매니저를 초기화
-    this.nodeManager.setOnNavigate((delta) => this.history.go(delta));
-    const state = this.nodeManager.initialize(history.state);
-    this.history.replaceState(state, "");
-    this.history.setPushListener(this.handleExternalPush.bind(this));
-    this.history.setReplaceListener(this.handleExternalReplace.bind(this));
+    this.history.replaceState(this.nodeManager.initialize(history.state), "");
+
+    // 오리지널 history 에 직접 호출된 pushState/replaceState 를 처리하는 리스너 설정
+    this.history.setPushListener(this.handleOriginalPush.bind(this));
+    this.history.setReplaceListener(this.handleOriginalReplace.bind(this));
   }
 
-  private handleExternalPush(state: unknown, url?: string | URL | null): void {
-    console.debug("외부 pushState 감지됨", state);
+  /** 히스토리 노드 변경 이벤트 리스너 추가 */
+  addHistoryNodeChangeEventListener(
+    listener: HistoryNodeChangeEventListener
+  ): void {
+    this.nodeManager.addHistoryNodeChangeEventListener(listener);
+  }
+
+  /** 히스토리 노드 변경 이벤트 리스너 제거 */
+  removeHistoryNodeChangeEventListener(
+    listener: HistoryNodeChangeEventListener
+  ): void {
+    this.nodeManager.removeHistoryNodeChangeEventListener(listener);
+  }
+
+  /** window.history.pushState 요청 전처리 리스너 추가 */
+  addOnBeforePushEventListener(listener: OnBeforePushEventListener): void {
+    this.onBeforePushEventListeners.add(listener);
+  }
+
+  /** window.history.pushState 요청 전처리 리스너 제거 */
+  removeOnBeforePushEventListener(listener: OnBeforePushEventListener): void {
+    this.onBeforePushEventListeners.delete(listener);
+  }
+
+  /**
+   * window.history 에 직접 호출된 pushState 를 처리합니다.
+   *
+   * @param state 히스토리 상태(데이터)
+   * @param url 히스토리 경로
+   */
+  private handleOriginalPush(state: unknown, url?: string | URL | null): void {
+    // HistoryManager 가 아닌 방식으로 push 되면 원본 히스토리 관리자에 의해서 히스토리 노드가 변경되었을 것이다.
+    // 따라서 원본 히스토리 관리자에 의해서 히스토리 노드가 변경되었을 것이다.
+    this.onBeforePushEventListeners.forEach((listener) => listener(state, url));
     this.push(state, url, { intercepted: true });
   }
 
-  private handleExternalReplace(
+  /**
+   * window.history 에 직접 호출된 replaceState 를 처리합니다.
+   *
+   * @param state 히스토리 상태(데이터)
+   * @param url 히스토리 경로
+   */
+  private handleOriginalReplace(
     state: unknown,
     url?: string | URL | null
   ): void {
-    console.debug("외부 replaceState 감지됨", state);
     this.replace(state, url, { intercepted: true });
   }
 
@@ -41,32 +81,6 @@ export class HistoryManagerImpl implements HistoryManager {
   }
   getHistoryProxy(): HistoryProxy {
     return this.history;
-  }
-
-  push<T = unknown>(
-    data: T,
-    url?: string | URL | null,
-    options?: HistoryOptions
-  ): Readonly<HistoryState<T>> {
-    console.debug("HistoryManager push", data, url, options);
-    // NodeManager에서 HistoryState 생성 및 노드 관리
-    const state = this.nodeManager.requestPush(data, url, options);
-    // 프록시를 통해 원본 메서드 호출
-    this.history.pushState(state, "", url);
-    return state;
-  }
-
-  replace<T = unknown>(
-    data: T,
-    url?: string | URL | null,
-    options?: HistoryOptions
-  ): Readonly<HistoryState<T>> {
-    console.debug("HistoryManager replace", data, url, options);
-    // NodeManager에서 HistoryState 생성 및 노드 관리
-    const state = this.nodeManager.requestReplace(data, url, options);
-    // 프록시를 통해 원본 메서드 호출
-    this.history.replaceState(state, "", url);
-    return state;
   }
 
   back(): void {
@@ -81,25 +95,31 @@ export class HistoryManagerImpl implements HistoryManager {
     this.history.go(delta);
   }
 
-  addNavigationListener(listener: NavigationListener): void {
-    this.nodeManager.addNavigationListener(listener);
+  push<T = unknown>(
+    data: T,
+    url?: string | URL | null,
+    options?: HistoryOptions
+  ): Readonly<HistoryState<T>> {
+    // NodeManager에서 HistoryState 생성 및 노드 관리
+    const state = this.nodeManager.onPush(
+      data,
+      url, // ?? location.pathname,
+      options
+    );
+    // 프록시를 통해 원본 메서드 호출
+    this.history.pushState(state, "", url);
+    return state;
   }
 
-  removeNavigationListener(listener: NavigationListener): void {
-    this.nodeManager.removeNavigationListener(listener);
-  }
-
-  /**
-   * 현재 노드 목록 조회 (디버깅용)
-   */
-  getNodes(): readonly HistoryNode[] {
-    return this.nodeManager.nodes;
-  }
-
-  /**
-   * 현재 위치 조회 (디버깅용)
-   */
-  getPosition(): number {
-    return this.nodeManager.position;
+  replace<T = unknown>(
+    data: T,
+    url?: string | URL | null,
+    options?: HistoryOptions
+  ): Readonly<HistoryState<T>> {
+    // NodeManager에서 HistoryState 생성 및 노드 관리
+    const state = this.nodeManager.onReplace(data, url, options);
+    // 프록시를 통해 원본 메서드 호출
+    this.history.replaceState(state, "", url);
+    return state;
   }
 }

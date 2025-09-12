@@ -32,20 +32,16 @@ export class HistoryProxyImpl implements HistoryProxy {
   private setupGlobalInterceptors(history: History): void {
     // original 함수와 history 함수가 같으면 아직 교체되지 않음.
     if (this.initialized) {
-      console.debug("Global interceptors already set up");
+      console.warn("Global interceptors already set up");
       return;
     }
     // 아직 프록시가 설정되지 않음, 설정 필요
-    console.debug("Setting up global interceptors");
-
     // pushState 인터셉터 설정
     history.pushState = (
       state: unknown,
       _unused: string,
       url?: string | URL | null
     ) => {
-      console.debug("Global pushState intercepted", state, url);
-
       // 모든 HistoryProxy 인스턴스의 리스너들에게 알림
       // TODO: 여기서 리스너들을 호출해야 하는데, 어떻게 접근할까?
 
@@ -58,7 +54,6 @@ export class HistoryProxyImpl implements HistoryProxy {
       _unused: string,
       url?: string | URL | null
     ) => {
-      console.debug("Global replaceState intercepted", state, url);
       this.onChangeStateReplace?.(state, url);
     };
 

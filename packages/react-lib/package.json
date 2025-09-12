@@ -16,6 +16,11 @@
             "types": "./dist/contexts/*.d.ts",
             "import": "./dist/contexts/*.js",
             "require": "./dist/contexts/*.cjs"
+        },
+        "./libs/*": {
+            "types": "./dist/libs/*.d.ts",
+            "import": "./dist/libs/*.js",
+            "require": "./dist/libs/*.cjs"
         }
     },
     "files": [

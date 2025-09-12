@@ -4,15 +4,12 @@ export type HistoryDialogProps = {
   open: boolean;
   title: string;
   nextTitle?: string;
-  onClickOpenNext?: () => void;
+  onClose?: () => void;
+  onOpenNext?: () => void;
 };
+
 export default function HistoryModal(props: HistoryDialogProps) {
-  const {
-    open,
-    title,
-    nextTitle: nextTitle,
-    onClickOpenNext: onClickOpenNext,
-  } = props;
+  const { open, title, nextTitle: nextTitle, onClose, onOpenNext } = props;
   return (
     <Dialog.Root open={open}>
       <Dialog.Content maxWidth="450px">
@@ -23,10 +20,10 @@ export default function HistoryModal(props: HistoryDialogProps) {
         </Dialog.Description>
 
         <Flex gap="3" mt="4" justify="end">
-          <Button variant="soft" color="gray" onClick={close}>
+          <Button variant="soft" color="gray" onClick={onClose}>
             모달 닫기
           </Button>
-          {nextTitle && <Button onClick={onClickOpenNext}>{nextTitle}</Button>}
+          {nextTitle && <Button onClick={onOpenNext}>{nextTitle}</Button>}
         </Flex>
       </Dialog.Content>
     </Dialog.Root>

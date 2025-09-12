@@ -1,24 +1,26 @@
-import { NavigationChangeEvent } from "../core/HistoryManager.type";
 import { HistoryNode } from "../types/HistoryNode";
+import {
+  HistoryNodeChangeEvent,
+  HistoryNodeChangeEventListener,
+} from "../types/HistoryNodeChangeEvent";
 import { HistoryOptions } from "../types/HistoryOptions";
 import { HistoryState, isHistoryState } from "../types/HistoryState";
+import { sliceWithDirection } from "../utils/sliceWithDirection";
+import { findNodeById } from "./FindNode";
+import { NodeManager, PredicateHistoryNode } from "./NodeManager.type";
 import {
-  NavigationEventListener,
-  NodeManager,
-  OnNavigate,
-  PredicateHistoryNode,
-  Storage,
-} from "./NodeManager.type";
-import { getNodeFromState, satisfiesManagedState } from "./NodeManager.utils";
-import { SessionStorageAdapter } from "./SessionStorageAdapter";
+  findNearestIndex,
+  getNodeFromState,
+  satisfiesManagedState,
+} from "./NodeManager.utils";
+import { SessionStorageAdapter, Storage } from "./Storage";
 
 /**
  * 노드 관리자 구현체
  */
 class NodeManagerImpl implements NodeManager {
   private readonly storage: Storage<HistoryNode[]>;
-  private readonly listeners: Set<NavigationEventListener> = new Set();
-  private onNavigate: OnNavigate | undefined;
+  private readonly listeners: Set<HistoryNodeChangeEventListener> = new Set();
   private _nodes: HistoryNode[] = [];
   private _position: number = 0;
 
@@ -26,7 +28,14 @@ class NodeManagerImpl implements NodeManager {
     this.storage = new SessionStorageAdapter(storageKey);
     // popstate 이벤트 리스닝
     window.addEventListener("popstate", (event) => {
-      this.onPopState(event.state);
+      // popstate 이벤트를 처리하고, 이동이 필요한 경우 즉시 이동합니다.
+      // 이 이동은 node 작업이 필요없는 단순 이동이기 때문에 여기서 즉시 이동합니다.
+      const delta: number | undefined = this.onPopState(event.state);
+      // 조심!!! delta 가 0 이면 페이지가 새로고침됩니다.
+      if (delta === undefined || delta === 0) {
+        return;
+      }
+      window.history.go(delta);
     });
   }
 
@@ -37,7 +46,6 @@ class NodeManagerImpl implements NodeManager {
   }
 
   private flush(): void {
-    console.debug("flush");
     this.storage.save(this._nodes);
   }
 
@@ -53,14 +61,28 @@ class NodeManagerImpl implements NodeManager {
       state,
       this._position,
       this.pathname,
+      "managed",
       undefined, // affinity
-      true // initial
+      true, // initial
+      undefined // metadata
     );
     this._nodes = [getNodeFromState(initialState)];
     this.flush(); // 저장
 
     // 초기화된 상태 반환
     return initialState;
+  }
+
+  addHistoryNodeChangeEventListener(
+    listener: HistoryNodeChangeEventListener
+  ): void {
+    this.listeners.add(listener);
+  }
+
+  removeHistoryNodeChangeEventListener(
+    listener: HistoryNodeChangeEventListener
+  ): void {
+    this.listeners.delete(listener);
   }
 
   /**
@@ -101,15 +123,7 @@ class NodeManagerImpl implements NodeManager {
     else {
       this.setPosition(position);
       this._nodes = [...nodes];
-      console.debug(
-        [
-          `관리중인 노드를 복구했습니다.`,
-          `현재 상태: ${JSON.stringify(state, null, 2)}`,
-          `전체 노드: ${JSON.stringify(this._nodes, null, 2)}`,
-          `현재 노드: ${JSON.stringify(this.currentNode, null, 2)}`,
-          `현재 position: ${this._position}`,
-        ].join("\n")
-      );
+      console.debug("관리중인 노드를 복구했습니다.");
       return state;
     }
   }
@@ -127,12 +141,10 @@ class NodeManagerImpl implements NodeManager {
   }
 
   get position(): number {
-    console.debug("getPosition", this._position);
     return this._position;
   }
 
-  setPosition(position: number): void {
-    console.debug("setPosition", position);
+  private setPosition(position: number): void {
     this._position = position;
   }
 
@@ -140,7 +152,18 @@ class NodeManagerImpl implements NodeManager {
     return this._nodes[this.position];
   }
 
-  requestPush<T = unknown>(
+  private setCurrentNode(node: HistoryNode): void {
+    this._nodes[this.position] = node;
+  }
+
+  /**
+   * pushState 를 수행하기 전에 node 작업을 처리합니다.
+   * @param data
+   * @param url
+   * @param options
+   * @returns
+   */
+  onPush<T = unknown>(
     data: T,
     url?: string | URL | null,
     options?: HistoryOptions
@@ -156,6 +179,7 @@ class NodeManagerImpl implements NodeManager {
       data,
       nextPosition,
       pathname,
+      options?.intercepted ? "intercepted" : "managed",
       options?.affinity,
       undefined, // initial
       options?.metadata
@@ -176,14 +200,12 @@ class NodeManagerImpl implements NodeManager {
     this.notifyListeners({
       type: "push",
       delta: 1,
-      previous: currentNode,
-      current: nextNode,
       traversal: [currentNode, nextNode],
     });
     return state;
   }
 
-  requestReplace<T = unknown>(
+  onReplace<T = unknown>(
     data: T,
     url?: string | URL | null,
     options?: HistoryOptions
@@ -198,163 +220,92 @@ class NodeManagerImpl implements NodeManager {
       data,
       nextPosition,
       pathname,
+      options?.intercepted ? "intercepted" : "managed",
       options?.affinity,
       undefined, // initial
       options?.metadata
     );
     const replacedNode = getNodeFromState(state);
-    this._nodes[this._position] = replacedNode;
+    this.setCurrentNode(replacedNode);
     this.flush();
 
     // 이벤트 알림을 비동기로 처리하여 useHistory의 stateRef 설정이 완료된 후 실행되도록 함
     this.notifyListeners({
       type: "replace",
       delta: 0,
-      previous: currentNode,
-      current: replacedNode,
       traversal: [replacedNode],
     });
     return state;
   }
 
-  onPopState(state: unknown): void {
-    console.debug("onPopState", "state", state);
-    // 이미 history 의 position 이 변경되었다.
-    // 이 manager 의 position 은 preavious 가 되었다.
-    const previousPosition = this.position;
-    const previousNode = this.currentNode;
-
-    // 노드로 관리중인 아닌 상태는 진입 이벤트를 발생 시킬수가 없다.
+  /**
+   * popstate 이벤트에서 현재 노드를 찾아서 이벤트를 발생시킵니다.
+   *
+   * @param state history 에서 획득한 state
+   * @returns 이동할 히스토리 델타(이동거리). 추가 이동이 필요한 경우에는 0이 아님.
+   */
+  onPopState(state: unknown): number | undefined {
+    // 관리중이 아닌 노드가 발견되면 안된다.
     if (!isHistoryState(state)) {
-      console.error("onPopState", "state is not history state", state);
-      this.notifyListeners({
-        type: "pop",
-        delta: 0,
-        previous: previousNode,
-      });
-      return;
+      throw new Error(
+        "NodeManager:onPopState - state is not managed history state"
+      );
     }
 
-    const currentNode = this.findNodeById(getNodeFromState(state).id);
-    if (currentNode === undefined) {
+    const popNodeId = getNodeFromState(state).id;
+    const prevNode = this.currentNode;
+    const currNode = findNodeById(this._nodes, popNodeId);
+
+    // state 를 통해 획득한 데이터는 history 으로부터 획득한 데이터이다.
+    // session storage 에 동기화 중인 데이터와 맞지 않는다면 현재 노드가 발견되지 않을 수 있다.
+    if (currNode === undefined) {
       console.error(
-        "onPopState",
-        "current node not found",
-        getNodeFromState(state).id
+        "NodeManager:onPopState",
+        "state 의 노드 아이디로 현재 노드를 찾을 수 없습니다."
       );
       return;
     }
-    const currentPosition = currentNode.position;
-    const delta = currentPosition - previousPosition;
 
-    console.debug(
-      "onPopState",
-      "node position changed",
-      "prev:",
-      previousPosition,
-      "current:",
-      currentPosition
-    );
+    // 이전 노드로부터 현재 노드까지 이동한 거리
+    const delta = currNode.position - prevNode.position;
 
-    // 현재 노드가 봉인되 노드가 아니면 도착 상태로 마무리한다.
-    if (!currentNode.sealed) {
-      console.debug("onPopState", "current node is not sealed", currentNode);
-      this.setPosition(currentPosition);
-      // Traversal 계산 (중간 노드 포함)
-      const traversal = this.calculateTraversal(
-        previousPosition,
-        currentPosition
-      );
-
+    // 봉인되지 않은 노드라면, 정상적으로 포지션을 변경시키고, 이벤트를 발생시킵니다.
+    if (!currNode.sealed) {
+      this.setPosition(currNode.position);
       this.notifyListeners({
         type: "pop",
         delta,
-        previous: previousNode,
-        current: currentNode,
-        traversal,
+        // traversal(가로지른) 노드 계산 (시작 및 종료 노드 포함)
+        traversal: sliceWithDirection(
+          this._nodes,
+          prevNode.position,
+          currNode.position
+        ),
       });
+      return;
     }
-    // 현재 노드가 봉인된 노드인 경우 지금 이벤트를 발행하지 않고, 진행방향의 히스토리 중 sealed 되지 않은 노드를 찾는다.
-    // 그리고 그 히스토리까지 go 함수로 이동시킨다.
-    else {
-      console.debug("onPopState", "current node is sealed", currentNode);
-      const forward = delta > 0;
-      console.debug("onPopState", "forward", forward);
 
-      // sealed되지 않은 노드를 찾아서 그 위치로 이동
-      const targetPosition = this.findNearestUnsealedNode(
-        currentPosition,
-        forward
-      );
+    // 현재 노드는 봉인된 노드입니다.
+    // 봉인된 노드에 머물지 않기 위해서 봉인되지 않은 노드를 찾고, 해당 노드까지의 delta 를 반환합니다.
+    // 또한 지금 popstate 이벤트에 대응하여 네비게이션 이벤트를 발생시키지 않습니다.
 
-      if (targetPosition !== -1) {
-        const delta = targetPosition - currentPosition;
-        console.debug(
-          "onPopState",
-          "found unsealed node at position",
-          targetPosition
-        );
-        console.debug("onPopState", "skipCount to unsealed node", delta);
-        this.onNavigate?.(delta);
-      } else {
-        console.debug(
-          "onPopState",
-          "no unsealed node found in direction",
-          forward
-        );
-        // unsealed 노드가 없으면 원래 위치로 되돌아감
-        const skipCount = Math.abs(previousPosition - currentPosition);
-        this.onNavigate?.(forward ? -skipCount : skipCount);
-      }
-    }
+    // 봉인되지 않은 노드의 위치를 찾습니다.
+    // passthrough 방향으로 탐색해야 하기 때문에 delta 가 양수면 forward 방향을 계속 탐색한다.
+    const nearestUnsealedPosition = findNearestIndex(
+      this._nodes, // 노드 목록
+      (node) => !node.sealed, // 봉인되지 않은 노드 찾기
+      currNode.position, // 탐색 시작위치(exclusive)
+      Math.sign(delta) // delta to signum step
+    );
+
+    // 봉인되지 않은 노드를 찾았다면 그 위치로 이동
+    // 봉인되지 않은 노드를 찾지 못했다면 원래 위치로 되돌아감
+    return nearestUnsealedPosition !== -1
+      ? nearestUnsealedPosition - currNode.position // 봉인되지 않은 노드까지의 delta
+      : prevNode.position - currNode.position; // 원래 위치로 되돌아갈 delta
   }
 
-  /**
-   * 지정된 방향으로 sealed되지 않은 가장 가까운 노드의 위치를 찾습니다.
-   * @param startPosition 시작 위치
-   * @param forward 검색 방향 (true: 앞으로, false: 뒤로)
-   * @returns unsealed 노드의 위치, 없으면 -1
-   */
-  private findNearestUnsealedNode(
-    startPosition: number,
-    forward: boolean
-  ): number {
-    const step = forward ? 1 : -1;
-    const endPosition = forward ? this._nodes.length : -1;
-
-    for (
-      let i = startPosition + step;
-      forward ? i < endPosition : i > endPosition;
-      i += step
-    ) {
-      const node = this._nodes[i];
-      if (node && !node.sealed) {
-        console.debug(
-          "findNearestUnsealedNode",
-          "found unsealed node at position",
-          i
-        );
-        return i;
-      }
-    }
-
-    return -1; // unsealed 노드를 찾지 못함
-  }
-
-  private calculateTraversal(from: number, to: number): HistoryNode[] {
-    const step = Math.sign(to - from);
-    const traversal: HistoryNode[] = [];
-
-    for (let i = from; i !== to + step; i += step) {
-      if (i >= 0 && i < this._nodes.length) {
-        traversal.push(this._nodes[i]);
-      }
-    }
-
-    return traversal;
-  }
-
-  private notifyListeners(event: NavigationChangeEvent): void {
+  private notifyListeners(event: HistoryNodeChangeEvent): void {
     // 일반 이벤트 전달
     this.listeners.forEach((listener) => {
       try {
@@ -365,29 +316,24 @@ class NodeManagerImpl implements NodeManager {
     });
   }
 
-  findNodeById(id: string): HistoryNode | undefined {
-    return this._nodes.find((node) => node.id === id);
-  }
-
   seal(id: string): void {
-    console.debug("seal", id);
-    const targetNode = this.findNodeById(id);
-    if (targetNode) {
-      console.debug("seal", "target node found", targetNode);
-      targetNode.sealed = true;
-      this.flush();
-    } else {
-      console.debug("seal", "target node not found", id);
+    const found = findNodeById(this._nodes, id);
+    if (found === undefined) {
+      console.warn("seal", "node not found", id);
+      return;
     }
+    found.sealed = true;
+    this.flush();
   }
 
   unseal(id: string): void {
-    console.debug("unseal", id);
-    const targetNode = this.findNodeById(id);
-    if (targetNode) {
-      targetNode.sealed = false;
-      this.flush();
+    const found = findNodeById(this._nodes, id);
+    if (found === undefined) {
+      console.warn("unseal", "node not found", id);
+      return;
     }
+    found.sealed = false;
+    this.flush();
   }
 
   sealAffinity(affinity: string): void {
@@ -407,18 +353,6 @@ class NodeManagerImpl implements NodeManager {
   affect(action: (node: HistoryNode) => void): void {
     this._nodes.forEach(action);
     this.flush();
-  }
-
-  setOnNavigate(onNavigate: OnNavigate): void {
-    this.onNavigate = onNavigate;
-  }
-
-  addNavigationListener(listener: NavigationEventListener): void {
-    this.listeners.add(listener);
-  }
-
-  removeNavigationListener(listener: NavigationEventListener): void {
-    this.listeners.delete(listener);
   }
 }
 
