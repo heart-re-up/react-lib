@@ -82,13 +82,6 @@ export const useCountdown = (props: UseCountdownProps): UseCountdownReturns => {
   }, [options]);
 
   const stop = useCallback(() => {
-    console.debug("⏹️ useCountdown Stop:", {
-      remainingTime: currentRemainingTimeRef.current
-        ? `${Math.round(currentRemainingTimeRef.current / 1000)}s`
-        : "N/A",
-      wasRunning: isRunningRef.current,
-    });
-
     isRunningRef.current = false;
     setIsRunning(false);
     if (intervalRef.current) {
@@ -101,7 +94,6 @@ export const useCountdown = (props: UseCountdownProps): UseCountdownReturns => {
   // 화면 이탈/복귀 감지를 위한 visibility 이벤트
   const handleVisibilityChange = useCallback(() => {
     if (document.hidden) {
-      console.debug("👁️ useCountdown: Tab hidden");
       return;
     }
 
@@ -110,24 +102,12 @@ export const useCountdown = (props: UseCountdownProps): UseCountdownReturns => {
     // 화면 복귀 시 현재 시간 기준으로 남은 시간 재계산
     const now = Date.now();
     const newRemainingTime = Math.max(0, endTimeRef.current - now);
-    const previousRemainingTime = currentRemainingTimeRef.current;
-    const timeDrift = Math.abs(newRemainingTime - previousRemainingTime);
-
-    console.debug("👁️ useCountdown: Tab visible - Time recalculation:", {
-      now: new Date(now).toISOString(),
-      endTime: new Date(endTimeRef.current).toISOString(),
-      previousRemainingTime: `${Math.round(previousRemainingTime / 1000)}s`,
-      newRemainingTime: `${Math.round(newRemainingTime / 1000)}s`,
-      timeDrift: `${timeDrift}ms`,
-      driftSignificant: timeDrift > 1000 ? "YES" : "NO",
-    });
 
     // ref와 UI 모두 업데이트
     currentRemainingTimeRef.current = newRemainingTime;
     setRemainingTime(newRemainingTime);
 
     if (newRemainingTime <= 0) {
-      console.debug("⏰ useCountdown: Completed during tab switch");
       isRunningRef.current = false;
       setIsRunning(false);
       if (intervalRef.current) {
@@ -151,12 +131,6 @@ export const useCountdown = (props: UseCountdownProps): UseCountdownReturns => {
 
     // 카운트다운 완료 체크
     if (newRemainingTime <= 0) {
-      console.debug("🎯 useCountdown Complete:", {
-        endTime: new Date(endTimeRef.current).toISOString(),
-        actualEndTime: new Date(now).toISOString(),
-        completionAccuracy: `${now - endTimeRef.current}ms ${now > endTimeRef.current ? "late" : "early"}`,
-      });
-
       setRemainingTime(0);
       isRunningRef.current = false;
       setIsRunning(false);
@@ -179,16 +153,6 @@ export const useCountdown = (props: UseCountdownProps): UseCountdownReturns => {
         100
       );
 
-      console.debug("🕐 useCountdown UI Update:", {
-        now: new Date(now).toISOString(),
-        expectedInterval: `${expectedInterval}ms`,
-        actualInterval: `${actualInterval}ms`,
-        delta: `${delta}ms (${delta > 0 ? "late" : "early"})`,
-        nextInterval: `${adjustedNextInterval}ms`,
-        adjustment: `${optionsRef.current.reportInterval - adjustedNextInterval}ms`,
-        remainingTime: `${Math.round(newRemainingTime / 1000)}s`,
-      });
-
       // UI 업데이트 (setState 호출)
       setRemainingTime(newRemainingTime);
 
@@ -204,16 +168,6 @@ export const useCountdown = (props: UseCountdownProps): UseCountdownReturns => {
     const now = Date.now();
     const endTime = now + remainingTime;
     const checkInterval = 1000 / optionsRef.current.computeFrame;
-
-    console.debug("🚀 useCountdown Start:", {
-      startTime: new Date(now).toISOString(),
-      endTime: new Date(endTime).toISOString(),
-      duration: `${Math.round(remainingTime / 1000)}s`,
-      reportInterval: `${optionsRef.current.reportInterval}ms`,
-      computeFrame: `${optionsRef.current.computeFrame}fps`,
-      checkInterval: `${checkInterval.toFixed(2)}ms`,
-      options: optionsRef.current,
-    });
 
     endTimeRef.current = endTime;
     currentRemainingTimeRef.current = remainingTime;

@@ -18,7 +18,6 @@ export type UseFocusTrapReturn = UseFocusReturn & UseFocusableElementsReturn;
 export const useFocusTrap = (
   options: UseFocusTrapProps
 ): UseFocusTrapReturn => {
-  console.log("useFocusTrap", "useFocusTrap");
   const { disabled = false, autoFocus = true } = options;
   const containerRef = useRef<HTMLElement>(null);
 
@@ -34,7 +33,6 @@ export const useFocusTrap = (
   const refCallback: React.RefCallback<HTMLElement> = (
     instance: HTMLElement
   ) => {
-    console.log("useFocusTrap", "useForkRef");
     containerRef.current = instance;
   };
 

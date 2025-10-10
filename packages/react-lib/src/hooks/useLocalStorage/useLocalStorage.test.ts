@@ -1,6 +1,6 @@
-import { renderHook, act } from '@testing-library/react';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { useLocalStorage } from './useLocalStorage';
+import { renderHook, act } from "@testing-library/react";
+import { describe, it, expect, beforeEach, vi } from "vitest";
+import { useLocalStorage } from "./useLocalStorage";
 
 // localStorage mock
 const localStorageMock = (() => {
@@ -20,64 +20,75 @@ const localStorageMock = (() => {
   };
 })();
 
-Object.defineProperty(window, 'localStorage', {
+Object.defineProperty(window, "localStorage", {
   value: localStorageMock,
 });
 
-describe('useLocalStorage', () => {
+describe("useLocalStorage", () => {
   beforeEach(() => {
     localStorageMock.clear();
     vi.clearAllMocks();
   });
 
-  it('should initialize with initial value when localStorage is empty', () => {
-    const { result } = renderHook(() => useLocalStorage('test-key', 'initial'));
-    
-    expect(result.current[0]).toBe('initial');
+  it("should initialize with initial value when localStorage is empty", () => {
+    const { result } = renderHook(() => useLocalStorage("test-key", "initial"));
+    const [value] = result.current;
+
+    expect(value).toBe("initial");
   });
 
-  it('should initialize with value from localStorage when available', () => {
-    localStorageMock.setItem('test-key', JSON.stringify('stored-value'));
-    
-    const { result } = renderHook(() => useLocalStorage('test-key', 'initial'));
-    
-    expect(result.current[0]).toBe('stored-value');
+  it("should initialize with value from localStorage when available", () => {
+    localStorageMock.setItem("test-key", JSON.stringify("stored-value"));
+
+    const { result } = renderHook(() => useLocalStorage("test-key", "initial"));
+    const [value] = result.current;
+
+    expect(value).toBe("stored-value");
   });
 
-  it('should update localStorage when value changes', () => {
-    const { result } = renderHook(() => useLocalStorage('test-key', 'initial'));
-    
+  it("should update localStorage when value changes", () => {
+    const { result } = renderHook(() => useLocalStorage("test-key", "initial"));
+
     act(() => {
-      result.current[1]('new-value');
+      const [, setValue, , flush] = result.current;
+      setValue("new-value");
+      // flush를 호출하여 즉시 localStorage에 저장
+      flush();
     });
-    
-    expect(result.current[0]).toBe('new-value');
-    expect(localStorageMock.getItem('test-key')).toBe(
-      JSON.stringify('new-value')
+
+    const [value] = result.current;
+    expect(value).toBe("new-value");
+    expect(localStorageMock.getItem("test-key")).toBe(
+      JSON.stringify("new-value")
     );
   });
 
-  it('should work with function updater', () => {
-    const { result } = renderHook(() => useLocalStorage('test-key', 10));
-    
+  it("should work with function updater", () => {
+    const { result } = renderHook(() => useLocalStorage("test-key", 10));
+
     act(() => {
-      result.current[1](prev => prev + 5);
+      const [, setValue, , flush] = result.current;
+      setValue((prev) => prev + 5);
+      // flush를 호출하여 즉시 localStorage에 저장
+      flush();
     });
-    
-    expect(result.current[0]).toBe(15);
-    expect(localStorageMock.getItem('test-key')).toBe(JSON.stringify(15));
+
+    const [value] = result.current;
+    expect(value).toBe(15);
+    expect(localStorageMock.getItem("test-key")).toBe(JSON.stringify(15));
   });
 
-  it('should handle JSON parsing errors gracefully', () => {
-    localStorageMock.setItem('test-key', 'invalid-json');
-    
-    const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    
-    const { result } = renderHook(() => useLocalStorage('test-key', 'default'));
-    
-    expect(result.current[0]).toBe('default');
+  it("should handle JSON parsing errors gracefully", () => {
+    localStorageMock.setItem("test-key", "invalid-json");
+
+    const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    const { result } = renderHook(() => useLocalStorage("test-key", "default"));
+    const [value] = result.current;
+
+    expect(value).toBe("default");
     expect(consoleSpy).toHaveBeenCalled();
-    
+
     consoleSpy.mockRestore();
   });
 });

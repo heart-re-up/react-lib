@@ -21,7 +21,6 @@ export class TrustedOrigins {
     }
 
     if (!isExactOrigin(exactOrigin)) {
-      // eslint-disable-next-line no-console
       console.warn(`[TrustedOrigins] Invalid origin pattern: ${exactOrigin}`);
       return false;
     }

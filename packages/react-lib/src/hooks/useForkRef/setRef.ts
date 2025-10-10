@@ -9,6 +9,6 @@ export function setRef<T>(ref: Ref<T>, value: T): void {
   if (typeof ref === "function") {
     ref(value);
   } else if (ref && typeof ref === "object" && "current" in ref) {
-    (ref as any).current = value;
+    (ref as { current: T }).current = value;
   }
 }

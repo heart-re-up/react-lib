@@ -33,7 +33,6 @@ export function useParentElement(
   const parentRef = useRef<HTMLElement | null>(null);
 
   const updateParent = useCallback(() => {
-    console.log("updateParent in useCallback in useRefParentElement");
     const element = elementRef.current;
     const newParent = element?.parentElement || null;
     // 실제로 부모가 변경된 경우만 상태 업데이트
