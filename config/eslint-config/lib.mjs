@@ -9,7 +9,7 @@ export default [
       "@typescript-eslint/no-explicit-any": "error",
       "@typescript-eslint/explicit-function-return-type": "warn",
       "@typescript-eslint/explicit-module-boundary-types": "warn",
-      "no-console": "warn",
+      "no-console": ["warn", { allow: ["warn", "error"] }],
       "prefer-const": "error",
     },
   },

@@ -53,14 +53,13 @@ export const useControlledState = <T>(
     if (wasControlled !== undefined && wasControlled !== isControlled) {
       const previousState = wasControlled ? "제어" : "비제어";
       const currentState = isControlled ? "제어" : "비제어";
-      
+
       const warningMessages = [
         `useControlledState: 컴포넌트가 ${previousState}에서 ${currentState}로 전환되었습니다.`,
         "이는 예측 불가능한 동작을 야기할 수 있습니다.",
-        "컴포넌트는 생명주기 동안 일관되게 제어되거나 비제어되어야 합니다."
+        "컴포넌트는 생명주기 동안 일관되게 제어되거나 비제어되어야 합니다.",
       ];
-      
-      // eslint-disable-next-line no-console
+
       console.warn(warningMessages.join(" "));
     }
   }, [isControlled, wasControlled]);
