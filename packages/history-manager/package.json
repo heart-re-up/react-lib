@@ -52,5 +52,13 @@
     },
     "dependencies": {
         "uuid": "^11.1.0"
+    },
+    "publishConfig": {
+        "registry": "https://npm.pkg.github.com"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/heart-re-up/react-hooks.git",
+        "directory": "packages/history-manager"
     }
 }
