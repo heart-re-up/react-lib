@@ -23,19 +23,22 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 8
+          version: 10
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Run tests for react-lib
-        run: pnpm --filter @heart-re-up/react-lib test
+        working-directory: packages/react-lib
+        run: pnpm test
 
       - name: Run linting for react-lib
-        run: pnpm --filter @heart-re-up/react-lib lint
+        working-directory: packages/react-lib
+        run: pnpm lint
 
       - name: Type check for react-lib
-        run: pnpm --filter @heart-re-up/react-lib typecheck
+        working-directory: packages/react-lib
+        run: pnpm typecheck
 
   build:
     needs: test
@@ -47,19 +50,20 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "18"
+          node-version: "22"
           cache: "pnpm"
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 8
+          version: 10
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Build react-lib
-        run: pnpm --filter @heart-re-up/react-lib build
+        working-directory: packages/react-lib
+        run: pnpm build
 
   publish:
     needs: [test, build]
@@ -72,20 +76,21 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "18"
+          node-version: "22"
           registry-url: "https://npm.pkg.github.com"
           cache: "pnpm"
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 8
+          version: 10
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Build react-lib
-        run: pnpm --filter @heart-re-up/react-lib build
+        working-directory: packages/react-lib
+        run: pnpm build
 
       - name: Publish react-lib to GitHub Packages
         working-directory: packages/react-lib
