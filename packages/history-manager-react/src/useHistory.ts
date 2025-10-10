@@ -12,13 +12,13 @@ import { HistoryManagerContext } from "./HistoryManagerContext";
  * 중복 푸시 정책
  * - 'never': 중복 푸시 금지 (이미 히스토리에 있으면 푸시 불가. replace 되어 관리중인 경우도 이미 있는 것으로 취급 )
  * - 'always': 중복 푸시 허용 (항상 푸시 가능)
- * - 'no-forward': forward 방향의 히스토리에 있으면 중복 푸시 금지
+ * - 'no-backward': backward 방향의 히스토리에 있으면 중복 푸시 금지
  * - 'not-current': 현재 노드가 아닐 때만 중복 푸시 허용 (기본값)
  */
 export type DuplicatePushPolicy =
   | "never"
   | "always"
-  | "no-forward"
+  | "no-backward"
   | "not-current";
 
 /**
@@ -89,7 +89,7 @@ export function useHistory<T = unknown>(
   const {
     key,
     affinity,
-    duplicatePushPolicy = "no-forward",
+    duplicatePushPolicy = "no-backward",
     onEnter,
     onExit,
     onNodeChanged,
@@ -118,12 +118,14 @@ export function useHistory<T = unknown>(
       case "always":
         return true;
       // 이미 backward 방향의 히스토리에 있으면 중복 푸시 금지
-      case "no-forward": {
+      // 단, 봉인(sealed)되지 않은 노드만 존재하는 것으로 취급
+      case "no-backward": {
         const existInForwardHistory = manager
           .getNodeManager()
           // 현재 노드를 포함하려면 end(exclusive)이기에 +1 해야함
           .nodes.slice(0, manager.getNodeManager().position + 1)
-          .some((node) => node.metadata?.key === key);
+          .filter((node) => node.metadata?.key === key)
+          .some((node) => !node.sealed);
         // 전방 히스토리에 있으면 푸시 불가 출력
         if (existInForwardHistory) {
           console.warn(

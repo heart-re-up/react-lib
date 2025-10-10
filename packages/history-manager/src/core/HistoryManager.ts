@@ -7,6 +7,10 @@ import { HistoryState } from "../types/HistoryState";
 import { OnBeforePushEventListener } from "../types/OnBeforePushEventListener";
 import { HistoryManager } from "./HistoryManager.type";
 
+// TODO: 확실한 페이지 변경 또는 컴포넌트 마운트/언마운트 패턴에 따른 히스토리 관리 방법 검토
+// shouldBeOpen 에 대한 확실한 관리. 현재는 페이지가 새로고침되면 무조건 파기되고있다...
+// 두개 옵션에 대한 정책을 정하고 설정으로 동작할 수 있도록 한다.
+
 /**
  * 히스토리 관리자 구현체
  */

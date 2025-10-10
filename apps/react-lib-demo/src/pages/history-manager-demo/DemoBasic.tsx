@@ -20,7 +20,11 @@ export function DemoBasic() {
       </Text>
 
       {/* 모달 컨트롤러 */}
-      <ModalController onNavigationLog={handleNavigationLog} />
+      <ModalController
+        pageName="페이지A"
+        nextPageName="페이지B"
+        nextPagePath="/history-manager/page-b"
+      />
 
       {/* 사용 팁 */}
       <Card variant="surface">
