@@ -5,6 +5,8 @@ strict-peer-dependencies=false
 
 # 패키지 레지스트리
 registry=https://registry.npmjs.org/
+@heart-re-up:registry=https://npm.pkg.github.com/
+git-checks=false # tag 배포를 위한 브랜치 검사 비활성화
 
 # 성능 최적화
 network-concurrency=16
