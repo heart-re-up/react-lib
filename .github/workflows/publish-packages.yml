@@ -88,6 +88,6 @@ jobs:
 
       - name: Publish react-lib to GitHub Packages
         working-directory: packages/react-lib
-        run: pnpm publish --access public
+        run: pnpm publish --no-git-checks --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
